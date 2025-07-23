@@ -11,7 +11,7 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,i)
 mem = 0.95;
 Gam = mem*Gam;
 Ny = Nx; 
-Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
+Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/24;
 
 %% Grid, variable coefficient, and initial data:
 Nxy = Nx*Ny;
@@ -61,7 +61,7 @@ drop_radius = (0.745/2)*10^(-3);
 
 %theta = 0.266*2*pi; %(0.042 xF/TF) at Me 0.99 % <<< OLD VALUE >>>
 %theta = (1 + 2 * 0.248) * pi; % <<< try this value first >>>
-theta = 1.366 * pi; % <<< matt's testing value >>>
+theta =1.366 * pi; % <<< matt's testing value >>>
 
 drop_density  = 949;              % Density of drop (kg/m3)
 drop_mass = 4/3*pi*drop_radius^3*drop_density; % mass of drop (kg);
@@ -138,6 +138,18 @@ kx_deriv =  2*pi*1i/Lx*[0:(Nx/2-1) (-Nx/2):-1];
 ky_deriv =  2*pi*1i/Ly*[0:(Ny/2-1) (-Ny/2):-1];
 [Kx_deriv,Ky_deriv] = meshgrid(kx_deriv,ky_deriv);
 K2_deriv = Kx_deriv.^2 + Ky_deriv.^2;
+
+
+%% Stuff for B4
+%{
+
+%}
+K_vec = reshape(sqrt(-K2_deriv),[],1);
+K2_vec = K2_deriv(:);
+K3_vec = K_vec.^3;
+
+dkx=2*pi/Lx;dky=2*pi/Ly;
+
 
 %% Dissipation operator (including highest frequency) <<< MD >>
 % dissipation term over half timestep, i.e. exp(-2 * nu * k^2 * dt/2)
