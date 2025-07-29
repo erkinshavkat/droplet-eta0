@@ -1,4 +1,4 @@
-function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,i)
+function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk_multiple)
 % Sets most of the parameters for the problem
 % Input: 
 %   Nx          -------- Number of points in x
@@ -11,7 +11,7 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,i)
 mem = 0.95;
 Gam = mem*Gam;
 Ny = Nx; 
-Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/24;
+Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
 
 %% Grid, variable coefficient, and initial data:
 Nxy = Nx*Ny;
@@ -61,7 +61,7 @@ drop_radius = (0.745/2)*10^(-3);
 
 %theta = 0.266*2*pi; %(0.042 xF/TF) at Me 0.99 % <<< OLD VALUE >>>
 %theta = (1 + 2 * 0.248) * pi; % <<< try this value first >>>
-theta =1.366 * pi; % <<< matt's testing value >>>
+theta =0;%1.366 * pi; % <<< matt's testing value >>>
 
 drop_density  = 949;              % Density of drop (kg/m3)
 drop_mass = 4/3*pi*drop_radius^3*drop_density; % mass of drop (kg);
@@ -144,13 +144,22 @@ K2_deriv = Kx_deriv.^2 + Ky_deriv.^2;
 %{
 
 %}
-K_vec = reshape(sqrt(-K2_deriv),[],1);
-K2_vec = K2_deriv(:);
+
+dkx=1/(Nk_multiple*Lx);
+Nk=Nx / (dkx*Lx);
+K_1d=[0:Nk/2-1 0 -Nk/2+1:-1]*2*pi *dkx;
+[K_2dx,K_2dy]=meshgrid(K_1d,K_1d);
+K2_mat = K_2dx.^2 + K_2dy.^2;
+K_vec = reshape(sqrt(K2_mat),[],1);
+K2_vec = K_vec.^2;
 K3_vec = K_vec.^3;
 
-dkx=2*pi/Lx;dky=2*pi/Ly;
+
+h_gridsize=dkx ^2;
 
 
+
+b4_prefactor=-d0*M*G/(2*pi)*h_gridsize;
 %% Dissipation operator (including highest frequency) <<< MD >>
 % dissipation term over half timestep, i.e. exp(-2 * nu * k^2 * dt/2)
 D = exp(nu0 * K2_deriv * dt);

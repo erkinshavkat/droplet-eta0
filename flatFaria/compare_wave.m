@@ -31,15 +31,21 @@ b1k.eta_data = zeros(p.Nx,p.Ny,p.nimpacts);
 
 
 
-prefactor=  -p.d0*p.M(1)*p.G/(2*pi);
 
-H_vec=zeros(p.Nx*p.Ny,1);
-dH_vec= ones(p.Nx*p.Ny,1);
 
+H_vec=zeros(size(p.K_vec));
+dH_vec= ones(size(p.K_vec));
+
+dH_vec_alt= ones(size(p.K_vec))/2;
 
 b4_waveheight=zeros(p.nimpacts*p.nsteps_impact);
 faria_waveheight=zeros(p.nimpacts*p.nsteps_impact);
-disp(p.x(p.Nx/2+1))
+
+faria_ax=plot(p.y,zeros(p.Nx,1),'LineWidth',2);hold on;
+b4_ax=plot(p.y,zeros(p.Nx,1));
+xlabel('Index'); ylabel('Value');
+xlim([-3,3])
+legend('faria','b4')
 for n=1:p.nimpacts
     
     disp(['Impact number: ' num2str(n)])
@@ -52,33 +58,25 @@ for n=1:p.nimpacts
         [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t + (nn -1)*p.dt, p);
 
 
-        % faria_eta=real(ifft2(faria.eta_hat));
-        % b4_eta_00=prefactor *sum(p.K3_vec.* H_vec.*besselj(0,p.K_vec.* sqrt((0-faria.xi).^2 +(0-faria.yi).^2 )));
-        
-        % b4_waveheight((n-1)*p.nimpacts + nn)=b4_eta_00;
-        % faria_waveheight((n-1)*p.nimpacts + nn))
+
         if mod(nn,5)==0
 
-            b4_eta_plot  = zeros(size(p.y)); 
-            for index=1:length(p.y)
-                b4_eta_plot(index) = prefactor *sum(p.K3_vec.* H_vec.*besselj(0,p.K_vec.* sqrt((p.x(p.Nx/2)-faria.xi).^2 +(p.y(index)-faria.yi).^2 )));
-            end
+            b4_eta_compute=@(x,y) p.b4_prefactor *sum(p.K3_vec.* H_vec.*besselj(0,p.K_vec.* sqrt((x-faria.xi).^2 +(y-faria.yi).^2 )));
+            b4_eta_center=@(y)b4_eta_compute(p.x(p.Nx/2),y);
+            b4_eta=arrayfun(b4_eta_center,p.y);
+
+
             faria_eta=real(ifft2(faria.eta_hat));
             faria_plot=faria_eta(:,p.Nx/2);
+            b4_eta_plot=b4_eta;
+            faria_ax.YData=faria_plot;
+            b4_ax.YData=b4_eta_plot;
+            
 
-            % plot(p.y,faria_plot,'LineWidth',2);hold on;
-            % plot(p.y,b4_eta_plot);
-            % ylim([-0.02,0.02])
-            plot(p.y,faria_plot/max(abs(faria_plot)),'LineWidth',2);hold on;
-            plot(p.y,b4_eta_plot/max(abs(b4_eta_plot)));
-            ylim([-1,1])
+            ylim([-0.005 0.005])
+
+
             title(['Impact ' num2str(n) ' Step ' num2str(nn)]);
-            xlabel('Index'); ylabel('Value');
-
-            xlim([-3,3])
-            legend('faria','b4')
-            hold off;
-            drawnow;
             pause(1/6);
         end
 

@@ -13,7 +13,7 @@ xi = p.xi; yi=p.yi; ui=p.ui; vi=p.vi;
 
 % Create vector for position
 x_data = zeros(p.nimpacts,1); y_data = x_data; t_data = zeros(p.nimpacts,1);
-eta_data = zeros(p.Nx,p.Ny,p.nimpacts); 
+eta_data = zeros(p.Nx,p.Ny,p.nimpacts*p.nsteps_impact); 
 
 % Fourier transform (2d) of initial condition
 phi_hat = fft2(phi);               
@@ -30,7 +30,7 @@ for n=1:p.nimpacts
         break
     end   
     % Store position (and possibly wavefield)
-    x_data(n,:) = xi; y_data(n,:) = yi; t_data(n) = t; eta_data(:,:,n) = gather(eta);
+    x_data(n,:) = xi; y_data(n,:) = yi; t_data(n) = t;
     disp(xi);
     % Drop impact
     % <<< MATT >>> use the updated function
@@ -41,6 +41,7 @@ for n=1:p.nimpacts
     % Evolve wave between impacts
     for nn=1:p.nsteps_impact 
         [phi_hat, eta_hat] = evolve_wave_IF_rkstep(phi_hat, eta_hat, t + (nn -1)*p.dt, p); 
+        eta_data(:,:,(n-1)*p.nsteps_impact + nn ) = gather(real(ifft2(eta_hat)));
     end
     t = t+p.impact_interval;
 
