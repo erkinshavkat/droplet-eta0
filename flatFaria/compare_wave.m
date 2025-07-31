@@ -1,4 +1,4 @@
-function [x_data,y_data,t_data,eta_data,phi_hat,ui,vi] = compare_wave(p)
+function [eta_b4, eta_faria] = compare_wave(p)
 %% Set initial condition 
 % <<< MATT >>> I've changed the initial impact time to account for the
 % change in gravitational acceleration. Impacts happen at times t_n = n +
@@ -7,77 +7,71 @@ function [x_data,y_data,t_data,eta_data,phi_hat,ui,vi] = compare_wave(p)
 % t = 0; % <<< OLD VALUE >>>
 t = p.theta/(4*pi);
 
-faria=struct;
-faria.phi = p.phi0; faria.eta = p.eta0; 
-faria.phi_hat = fft2(faria.phi); faria.eta_hat = fft2(faria.eta);
-faria.xi=p.xi; faria.yi=p.yi; faria.ui=p.ui; faria.vi=p.vi;
-faria.x_data = zeros(p.nimpacts,1); faria.y_data = zeros(p.nimpacts,1); faria.t_data = zeros(p.nimpacts,1);
-faria.eta_data = zeros(p.Nx,p.Ny,p.nimpacts); 
+
+phi = p.phi0; 
+eta = p.eta0; 
+phi_hat = fft2(phi); 
+eta_hat = fft2(eta);
+xi = p.xi; yi = p.yi; ui = p.ui; vi = p.vi;
+
+x_data= zeros(p.nimpacts,1);
+y_data= zeros(p.nimpacts,1);
 
 
-
-b1k=struct;
-b1k.xi=p.xi; b1k.yi=p.yi; b1k.ui=p.ui; b1k.vi=p.vi;
-b1k.etaprime = zeros(size(p.xx));
-b1k.eta = p.eta0; 
-b1k.eta_hat=fft2(b1k.eta);
-b1k.etaprime_hat=fft(b1k.etaprime);
-b1k.x_data = zeros(p.nimpacts,1); b1k.y_data = zeros(p.nimpacts,1); b1k.t_data = zeros(p.nimpacts,1);
-b1k.eta_data = zeros(p.Nx,p.Ny,p.nimpacts); 
-
-
-[faria.ui, faria.vi, faria.phi_hat] = drop_impact_matt(faria.xi,faria.yi, faria.ui, faria.vi, faria.phi_hat, faria.eta_hat, p);
-[b1k.ui, b1k.vi, b1k.etaprime_hat] = b1k_impact(b1k.xi,b1k.yi, b1k.ui, b1k.vi, b1k.etaprime_hat, p);
-
-
-
-
-
-H_vec=zeros(size(p.K_vec));
-dH_vec= ones(size(p.K_vec));
-
-dH_vec_alt= ones(size(p.K_vec))/2;
-
-b4_waveheight=zeros(p.nimpacts*p.nsteps_impact);
-faria_waveheight=zeros(p.nimpacts*p.nsteps_impact);
+H_vec=zeros(length(p.K_vec),p.nimpacts);
+dH_vec= zeros(length(p.K_vec),p.nimpacts);
 
 faria_ax=plot(p.y,zeros(p.Nx,1),'LineWidth',2);hold on;
-b4_ax=plot(p.y,zeros(p.Nx,1));
+b4_ax=plot(p.y,zeros(p.Nx,1),'--',"LineWidth",2);
 xlabel('Index'); ylabel('Value');
 xlim([-3,3])
 legend('faria','b4')
+
+v = VideoWriter('moving b4.avi','Motion JPEG AVI');
+v.FrameRate = 12; % 6 frames per second, adjust as needed
+open(v);
+
+eta_b4=zeros(p.Nx,p.nimpacts*p.nsteps_impact); eta_faria = zeros(p.Nx,p.nimpacts*p.nsteps_impact);
+H_data = zeros(length(p.K_vec),p.nimpacts*p.nsteps_impact);
 for n=1:p.nimpacts
     
     disp(['Impact number: ' num2str(n)])
-   
+    yi=(n-1)*0.5-2;
+    x_data(n) = xi;    y_data(n) = yi;
 
+    [ui, vi, phi_hat] = drop_impact_matt(xi, yi, ui, vi, phi_hat, eta_hat, p);
+    dH_vec(:,n) = 1; 
 
     for nn=1:p.nsteps_impact 
-        [faria.phi_hat, faria.eta_hat] = evolve_wave_IF_rkstep(faria.phi_hat, faria.eta_hat, t + (nn -1)*p.dt, p); 
+        [phi_hat, eta_hat] = evolve_wave_IF_rkstep(phi_hat, eta_hat, t + (nn -1)*p.dt, p); 
         %[b1k.eta_hat, b1k.etaprime_hat] = b1k_evolve_wave_rkstep(b1k.eta_hat,b1k.etaprime_hat, t + (nn -1)*p.dt, p); 
         [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t + (nn -1)*p.dt, p);
 
 
 
-        if mod(nn,5)==0
+        if mod(nn,1)==0
 
-            b4_eta_compute=@(x,y) p.b4_prefactor *sum(p.K3_vec.* H_vec.*besselj(0,p.K_vec.* sqrt((x-faria.xi).^2 +(y-faria.yi).^2 )));
-            b4_eta_center=@(y)b4_eta_compute(p.x(p.Nx/2),y);
-            b4_eta=arrayfun(b4_eta_center,p.y);
+            b4_eta_compute = @(x, y, impact) p.b4_prefactor * sum(p.K3_vec .* H_vec(:,impact) .* besselj(0, p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
+            b4_eta_center = @(y) sum(arrayfun(@(impact) b4_eta_compute(p.x(p.Nx/2), y, impact), 1:n));
+            b4_eta = arrayfun(b4_eta_center, p.y);
 
+            faria_eta = real(ifft2(eta_hat));
+            faria_plot = faria_eta(:,p.Nx/2);
 
-            faria_eta=real(ifft2(faria.eta_hat));
-            faria_plot=faria_eta(:,p.Nx/2);
             b4_eta_plot=b4_eta;
             faria_ax.YData=faria_plot;
             b4_ax.YData=b4_eta_plot;
             
-
+            eta_b4(:,(n-1)*p.nsteps_impact + nn ) = b4_eta_plot;
+            eta_faria(:,(n-1)*p.nsteps_impact + nn ) = faria_plot;
             ylim([-0.005 0.005])
 
 
             title(['Impact ' num2str(n) ' Step ' num2str(nn)]);
-            pause(1/6);
+
+            frame = getframe(gcf);
+            writeVideo(v, frame);
+            pause(1/48); % Optional: comment out or keep for live viewing
         end
 
     end
@@ -85,7 +79,16 @@ for n=1:p.nimpacts
     t = t+p.impact_interval;
 
 end
-x_data=b1x.x_data; y_data=b1x.y_data; t_data=b1x.t_data; eta_data=b1x.eta_data; ui=b1x.ui; vi=b1x.vi;
+
+
+close(v);
+close all;
+
+% imagesc([0,p.Lk/(2*pi)],[0,3],H_data');
+% colorbar;
+% caxis([0 0.1]);
+% xlabel('k/kF');
+% ylabel('t/TF');
 end
 
 

@@ -1,6 +1,5 @@
 function [d_Hfunc, d_Hprime] = H_rhs(Hfunc,Hprime, t, p)
 
-
     d_Hfunc=Hprime;
     d_Hprime = - 4 * p.nu0 .* p.K2_vec.*Hprime  ... 
         -4*p.nu0^2.*p.K2_vec.*p.K2_vec.*Hfunc ...

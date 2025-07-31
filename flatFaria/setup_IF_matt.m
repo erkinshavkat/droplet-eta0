@@ -1,4 +1,4 @@
-function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk_multiple)
+function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,Lk)
 % Sets most of the parameters for the problem
 % Input: 
 %   Nx          -------- Number of points in x
@@ -141,25 +141,16 @@ K2_deriv = Kx_deriv.^2 + Ky_deriv.^2;
 
 
 %% Stuff for B4
-%{
 
-%}
-
-dkx=1/(Nk_multiple*Lx);
-Nk=Nx / (dkx*Lx);
-K_1d=[0:Nk/2-1 0 -Nk/2+1:-1]*2*pi *dkx;
-[K_2dx,K_2dy]=meshgrid(K_1d,K_1d);
-K2_mat = K_2dx.^2 + K_2dy.^2;
-K_vec = reshape(sqrt(K2_mat),[],1);
+K_vec = linspace(0,Lk,Nk)';
 K2_vec = K_vec.^2;
 K3_vec = K_vec.^3;
 
 
-h_gridsize=dkx ^2;
-
-
-
+h_gridsize=K_vec(2)-K_vec(1);
 b4_prefactor=-d0*M*G/(2*pi)*h_gridsize;
+
+
 %% Dissipation operator (including highest frequency) <<< MD >>
 % dissipation term over half timestep, i.e. exp(-2 * nu * k^2 * dt/2)
 D = exp(nu0 * K2_deriv * dt);
