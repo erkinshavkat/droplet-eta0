@@ -24,9 +24,8 @@ for n=1:p.nimpacts
 
 
         if mod(nn,1)==0
-            t_dimensional = t * p.TF;
-            k_vec_dimensional = p.K_vec/(2*pi) * p.kf_mean;
-            H_A5= arrayfun (@(k) p.H_A5(t_dimensional,k) +p.Hlong2(t_dimensional, k), k_vec_dimensional);
+
+            H_A5= arrayfun (@(k) p.H_A5(t,k) +p.Hlong2(t, k), p.K_vec);
 
             H_num_ax.YData=H_vec;
             H_A5_ax.YData=H_A5;

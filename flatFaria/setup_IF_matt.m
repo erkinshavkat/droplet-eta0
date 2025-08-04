@@ -153,14 +153,14 @@ b4_prefactor=-d0*M*G/(2*pi)*h_gridsize;
 
 %% A5 for H
 
-TD=1/(2*nu*kf_mean^2);
-Me = TD/(TF*(1-mem));
-beta1 = ((2*(4*nu^2 + b0*sig/rho)*kf_mean^2+b0*g0)^2)/(nu*omega0^2);
+TD=1/(8*pi^2*nu0);
+Me = TD/(1-mem);
+beta1 = (8*pi^2*(4*nu0^2+d0*Bo) + d0*G)^2 / (16*nu0*pi^2);
 
-beta_func= @(k) - 1/(TF*Me)-beta1*(k-kf_mean).^2;
-phifunc = @(k) -pi/4;
-H_A5= @(t,k) -exp(beta_func(k)*t) .*cos(omega0*t/2 + phifunc(k))./(omega0*sin(phifunc(k)));
-Hlong2 = @(t,k) (exp(-2*nu*k.^2.*t).*sin(k.*sqrt(b0.*(k.^2*sig/rho + g0)).*t)./(k.*sqrt(b0.*(k.^2*sig/rho + g0))));
+beta_func= @(k) - 1/(Me)-beta1*(k-2*pi).^2;
+phifunc = @(k) -pi/4;%-1/2 * acot(2*mem / omega0 *(Gam-Gam/mem));%
+H_A5= @(t,k) -exp(beta_func(k)*t) .*cos(2*pi*t + phifunc(k))./(4*pi*sin(phifunc(k)));
+Hlong2 = @(t,k) (exp(-2*nu0*k.^2.*t).*sin(k.*sqrt(d0.*(k.^2*Bo + G)).*t)./(k.*sqrt(d0.*(k.^2*Bo+ G))));
 
 %% Dissipation operator (including highest frequency) <<< MD >>
 % dissipation term over half timestep, i.e. exp(-2 * nu * k^2 * dt/2)

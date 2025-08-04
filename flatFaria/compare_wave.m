@@ -36,7 +36,6 @@ H_data = zeros(length(p.K_vec),p.nimpacts*p.nsteps_impact);
 for n=1:p.nimpacts
     
     disp(['Impact number: ' num2str(n)])
-    yi=(n-1)*0.5-2;
     x_data(n) = xi;    y_data(n) = yi;
 
     [ui, vi, phi_hat] = drop_impact_matt(xi, yi, ui, vi, phi_hat, eta_hat, p);
@@ -46,11 +45,11 @@ for n=1:p.nimpacts
 
         [phi_hat, eta_hat] = evolve_wave_IF_rkstep(phi_hat, eta_hat, t, p); 
         %[b1k.eta_hat, b1k.etaprime_hat] = b1k_evolve_wave_rkstep(b1k.eta_hat,b1k.etaprime_hat, t + (nn -1)*p.dt, p); 
-        [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t, p);
+        %[H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t, p);
 
 
         if mod(nn,1)==0
-
+            %H_vec=arrayfun (@(k) p.H_A5(t,k) +p.Hlong2(t, k), p.K_vec)
             b4_eta_compute = @(x, y, impact) p.b4_prefactor * sum(p.K3_vec .* H_vec(:,impact) .* besselj(0, p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
             b4_eta_center = @(y) sum(arrayfun(@(impact) b4_eta_compute(p.x(p.Nx/2), y, impact), 1:n));
             b4_eta = arrayfun(b4_eta_center, p.y);
@@ -59,19 +58,19 @@ for n=1:p.nimpacts
             faria_plot = faria_eta(:,p.Nx/2);
 
             b4_eta_plot=b4_eta;
-            faria_ax.YData=faria_plot;
+            %faria_ax.YData=faria_plot;
             b4_ax.YData=b4_eta_plot;
             
             eta_b4(:,(n-1)*p.nsteps_impact + nn ) = b4_eta_plot;
             eta_faria(:,(n-1)*p.nsteps_impact + nn ) = faria_plot;
-            ylim([-0.005 0.005])
+            %ylim([-0.005 0.005])
 
 
             title(['Impact ' num2str(n) ' Step ' num2str(nn)]);
 
             % frame = getframe(gcf);
             % writeVideo(v, frame);
-            pause(1/48); 
+            pause(1/6); 
         end
         t= t+p.dt;
     end
