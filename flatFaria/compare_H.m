@@ -6,7 +6,7 @@ H_vec=zeros(length(p.K_vec),1);
 dH_vec= ones(length(p.K_vec),1);
 
 H_num_ax=plot(p.K_vec/(2*pi),H_vec,'LineWidth',2);hold on;
-H_A5_ax=plot(p.K_vec/(2*pi),H_vec,'--',"LineWidth",2);
+H_A5_ax=plot(p.K_vec/(2*pi),H_vec,':',"LineWidth",2);
 xlabel('Index'); ylabel('Value');
 
 legend('faria','b4')
@@ -24,10 +24,12 @@ for n=1:p.nimpacts
 
 
         if mod(nn,1)==0
-            H_A5= arrayfun (@(k) p.H_A5(t *p.TF,k) +p.Hlong2(t*p.TF, k), p.K_vec /(2*pi)*p.kf_mean);
+            t_dimensional = t * p.TF;
+            k_vec_dimensional = p.K_vec/(2*pi) * p.kf_mean;
+            H_A5= arrayfun (@(k) p.H_A5(t_dimensional,k) +p.Hlong2(t_dimensional, k), k_vec_dimensional);
 
-            H_num_ax.YData=H_vec/max(H_vec);
-            H_A5_ax.YData=H_A5/max(H_A5);
+            H_num_ax.YData=H_vec;
+            H_A5_ax.YData=H_A5;
 
 
             ylim([-0.5 0.5])
