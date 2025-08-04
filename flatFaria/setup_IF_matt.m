@@ -61,7 +61,7 @@ drop_radius = (0.745/2)*10^(-3);
 
 %theta = 0.266*2*pi; %(0.042 xF/TF) at Me 0.99 % <<< OLD VALUE >>>
 %theta = (1 + 2 * 0.248) * pi; % <<< try this value first >>>
-theta =0;%1.366 * pi; % <<< matt's testing value >>>
+theta = 0;%1.366 * pi; % <<< matt's testing value >>>
 
 drop_density  = 949;              % Density of drop (kg/m3)
 drop_mass = 4/3*pi*drop_radius^3*drop_density; % mass of drop (kg);
@@ -88,7 +88,8 @@ h0_deep     = h_top_grid./xF;
 d0_deep     = d_deep./xF;
 a0_deep     = 0;
 
-d0=(tanh(kf_mean*H) / kf_mean)  / xF;
+b0=(tanh(kf_mean*H) / kf_mean);
+d0=  b0/ xF;
 %% Dimensionless Faraday wavenumber
 kf0_deep     = kf_mean*xF;                   
 
@@ -150,6 +151,16 @@ K3_vec = K_vec.^3;
 h_gridsize=K_vec(2)-K_vec(1);
 b4_prefactor=-d0*M*G/(2*pi)*h_gridsize;
 
+%% A5 for H
+
+TD=1/(2*nu*kf_mean^2);
+Me = TD/(TF*(1-mem));
+beta1 = ((2*(4*nu^2 + b0*sig/rho)*kf_mean^2+b0*g0)^2)/(nu*omega0^2);
+
+beta_func= @(k) - 1/(TF*Me)-beta1*(k-kf_mean).^2;
+phifunc = @(k) -pi/4;
+H_A5= @(t,k) -exp(beta_func(k)*t) .*cos(omega0*t/2 + phifunc(k))./(omega0*sin(phifunc(k)));
+Hlong2 = @(t,k) (exp(-2*nu*k.^2.*t).*sin(k.*sqrt(b0.*(k.^2*sig/rho + g0)).*t)./(k.*sqrt(b0.*(k.^2*sig/rho + g0))));
 
 %% Dissipation operator (including highest frequency) <<< MD >>
 % dissipation term over half timestep, i.e. exp(-2 * nu * k^2 * dt/2)
