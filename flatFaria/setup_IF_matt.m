@@ -9,6 +9,7 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,Lk)
 %   dt_desired  -------- Desired time step
 %% Set parameters
 mem = 0;
+gammaf = Gam;
 Gam = mem*Gam;
 Ny = Nx; 
 Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
@@ -156,20 +157,24 @@ b4_prefactor=-d0*M*G/(2*pi)*h_gridsize;
 TD=1/(8*pi^2*nu0);
 Me = TD/(1-mem);
 beta1 = (8*pi^2*(4*nu0^2+d0*Bo) + d0*G)^2 / (16*nu0*pi^2);
-TD=1/(8*pi^2*nu0);
-Me = TD/(1-mem);
-beta1 = (8*pi^2*(4*nu0^2+d0*Bo) + d0*G)^2 / (16*nu0*pi^2);
 
 beta_func= @(k) - 1/(Me)-beta1*(k-2*pi).^2;
-phifunc = @(k) -pi/4;%-1/2 * acot(2*mem / omega0 *(Gam-Gam/mem));%
-H_A5= @(t,k) -exp(beta_func(k)*t) .*cos(2*pi*t + phifunc(k))./(4*pi*sin(phifunc(k)));
 
+
+kC= omega0 / (2 *(b0*g0 + sqrt(b0^2*g0^2 + omega0^2*(4*nu^2+b0*sig/rho))))^(1/2);
+C1=2*nu*kC^2/gammaf;
+
+phi_A6 = @ (k) (2*((4*nu^2 + b0*sig/rho)*kC^2)+b0*g0)+nu*kC*C1*(Gam-gammaf);
+phifunc = @(k) -1/2*acot( phi_A6(k)/nu*kC*omega0);
+%-pi/4;
+%-1/2 * acot(2*mem / omega0 *(Gam-Gam/mem));%
+H_A5= @(t,k) -exp(beta_func(k)*t) .*cos(2*pi*t + phifunc(k))./(4*pi*sin(phifunc(k)));
 H_A13 = @(t,k) 2/(4*pi) *exp(beta_func(k).*t)*cos(2*pi*t + phifunc(k))*cos(-phifunc(k));
 
 
 
 alpha_func= @(k) k.* sqrt(d0 *(k.^2*Bo + G));
-Hlong2 = @(t,k) exp(-2*nu0*k.^2.*t).*sin(alpha_func(k).*t)./alpha_func(k);
+H_A14 = @(t,k) exp(-2*nu0*k.^2.*t).*sin(alpha_func(k).*t)./alpha_func(k);
 
 %% Dissipation operator (including highest frequency) <<< MD >>
 % dissipation term over half timestep, i.e. exp(-2 * nu * k^2 * dt/2)

@@ -8,8 +8,11 @@ dH_vec= ones(length(p.K_vec),1);
 H_num_ax=plot(p.K_vec/(2*pi),H_vec,'LineWidth',2);hold on;
 H_A5_ax=plot(p.K_vec/(2*pi),H_vec,':',"LineWidth",2);
 xlabel('Index'); ylabel('Value');
-
 legend('faria','b4')
+
+% H_num_data=zeros(p.nimpacts*p.nsteps_impact,1);
+% H_A5_data=zeros(p.nimpacts*p.nsteps_impact,1);
+
 
 % v = VideoWriter('moving b4.avi','Motion JPEG AVI');
 % v.FrameRate = 12; % 6 frames per second, adjust as needed
@@ -25,8 +28,9 @@ for n=1:p.nimpacts
 
         if mod(nn,1)==0
 
-            H_A5= arrayfun (@(k) p.H_A13(t,k)+p.Hlong2(t, k), p.K_vec);
-
+            H_A5= arrayfun (@(k) p.H_A13(t,k)+p.H_A14(t, k), p.K_vec);
+            % H_num_data((n-1)*p.nsteps_impact + nn) = H_vec;
+            % H_A5_data((n-1)*p.nsteps_impact + nn) = H_A5;
             H_num_ax.YData=H_vec;
             H_A5_ax.YData=H_A5;
 
@@ -36,8 +40,8 @@ for n=1:p.nimpacts
 
             title(['Impact ' num2str(n) ' Step ' num2str(nn)]);
 
-            % frame = getframe(gcf);
-            % writeVideo(v, frame);
+            % % frame = getframe(gcf);
+            % % writeVideo(v, frame);
             pause(1/24); 
         end
         t= t+p.dt;
@@ -49,6 +53,11 @@ end
 
 % close(v);
 close all;
+time_domain=(1:p.nimpacts*p.nsteps_impact)*p.dt;
+semilogy(time_domain,abs(H_A5_data),'LineWidth',2); hold on;
+semilogy(time_domain,abs(H_num_data),'--','LineWidth',2);
+xlabel('Time'); ylabel('H');
+legend({'H_{A13+A14}','H_{numerical}'},'Location','best');
 
 % imagesc([0,p.Lk/(2*pi)],[0,3],H_data');
 % colorbar;

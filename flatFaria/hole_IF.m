@@ -4,7 +4,7 @@ disp('--- setting up ---')
 eta0=zeros(Nx);
 p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,Lk);
 p.xi = xi; p.yi = yi; p.ui= ui; p.vi = vi;
-p.nimpacts = 4;      % Number of impacts %%%%% ONLY THING TO EDIT HERE
+p.nimpacts = 10;      % Number of impacts %%%%% ONLY THING TO EDIT HERE
 lambdaf = p.lambdaf;
 mem = p.mem;
 %% Execute
