@@ -27,9 +27,9 @@ xlabel('Index'); ylabel('Value');
 xlim([-3,3])
 legend('faria','b4')
 
-v = VideoWriter('moving b4.avi','Motion JPEG AVI');
-v.FrameRate = 12; % 6 frames per second, adjust as needed
-open(v);
+% v = VideoWriter('moving b4.avi','Motion JPEG AVI');
+% v.FrameRate = 12; % 6 frames per second, adjust as needed
+% open(v);
 
 eta_b4=zeros(p.Nx,p.nimpacts*p.nsteps_impact); eta_faria = zeros(p.Nx,p.nimpacts*p.nsteps_impact);
 H_data = zeros(length(p.K_vec),p.nimpacts*p.nsteps_impact);
@@ -43,10 +43,10 @@ for n=1:p.nimpacts
     dH_vec(:,n) = 1; 
 
     for nn=1:p.nsteps_impact 
-        [phi_hat, eta_hat] = evolve_wave_IF_rkstep(phi_hat, eta_hat, t + (nn -1)*p.dt, p); 
-        %[b1k.eta_hat, b1k.etaprime_hat] = b1k_evolve_wave_rkstep(b1k.eta_hat,b1k.etaprime_hat, t + (nn -1)*p.dt, p); 
-        [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t + (nn -1)*p.dt, p);
 
+        [phi_hat, eta_hat] = evolve_wave_IF_rkstep(phi_hat, eta_hat, t, p); 
+        %[b1k.eta_hat, b1k.etaprime_hat] = b1k_evolve_wave_rkstep(b1k.eta_hat,b1k.etaprime_hat, t + (nn -1)*p.dt, p); 
+        [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t, p);
 
 
         if mod(nn,1)==0
@@ -69,14 +69,13 @@ for n=1:p.nimpacts
 
             title(['Impact ' num2str(n) ' Step ' num2str(nn)]);
 
-            frame = getframe(gcf);
-            writeVideo(v, frame);
-            pause(1/48); % Optional: comment out or keep for live viewing
+            % frame = getframe(gcf);
+            % writeVideo(v, frame);
+            pause(1/48); 
         end
-
+        t= t+p.dt;
     end
 
-    t = t+p.impact_interval;
 
 end
 
