@@ -5,10 +5,12 @@ t = p.theta/(4*pi);
 H_vec=zeros(length(p.K_vec),1);
 dH_vec= ones(length(p.K_vec),1);
 
+
+
 H_num_ax=plot(p.K_vec/(2*pi),H_vec,'LineWidth',2);hold on;
 H_A5_ax=plot(p.K_vec/(2*pi),H_vec,':',"LineWidth",2);
 xlabel('Index'); ylabel('Value');
-legend('faria','b4')
+legend('numerical','formula')
 
 % H_num_data=zeros(p.nimpacts*p.nsteps_impact,1);
 % H_A5_data=zeros(p.nimpacts*p.nsteps_impact,1);
@@ -28,7 +30,7 @@ for n=1:p.nimpacts
 
         if mod(nn,1)==0
 
-            H_A5= arrayfun (@(k) p.H_A13(t,k)+p.H_A14(t, k), p.K_vec);
+            H_A5= arrayfun (@(k) p.H_A5(t,k)+p.H_A14(t, k), p.K_vec);
             % H_num_data((n-1)*p.nsteps_impact + nn) = H_vec;
             % H_A5_data((n-1)*p.nsteps_impact + nn) = H_A5;
             H_num_ax.YData=H_vec;

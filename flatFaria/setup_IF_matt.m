@@ -8,8 +8,7 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,Lk)
 %   Gam         -------- Amplitude of the shaking
 %   dt_desired  -------- Desired time step
 %% Set parameters
-mem = 0.95;
-gammaf = Gam;
+mem =0.95;
 Gam = mem*Gam;
 Ny = Nx; 
 Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
@@ -163,13 +162,16 @@ beta1 = (8*pi^2*(4*nu0^2+d0*Bo) + d0*G)^2 / (16*nu0*pi^2);
 beta_func= @(k) - 1/(Me)-beta1*(k-2*pi).^2;
 
 
-kC= omega0 / (2 *(b0*g0 + sqrt(b0^2*g0^2 + omega0^2*(4*nu^2+b0*sig/rho))))^(1/2);
-C1=2*nu*kC^2/gammaf;
+gammaf_dimensional =  g0 * (Gam/mem);
+gamma_dimensional = g0 * Gam;
 
-phi_A6 = @ (k) (2*((4*nu^2 + b0*sig/rho)*kC^2)+b0*g0)+nu*kC*C1*(Gam-gammaf);
-phifunc = @(k) -pi/4;%-1/2*acot( phi_A6(k)/nu*kC*omega0);
+kC= omega0 / (2 *(b0*g0 + sqrt(b0^2*g0^2 + omega0^2*(4*nu^2+b0*sig/rho))))^(1/2);
+C1=2*nu*kC^2/gammaf_dimensional;
+
+A6_numerator = @(k_dim) (2*kC^2*(4*nu^2 + b0*sig/rho) + b0*g0)*(k_dim-kC) + nu *kC*C1*(gamma_dimensional-gammaf_dimensional);
+phifunc = @(k) -1/2 *acot(A6_numerator(k/(2*pi)*kf_mean) / (nu*kC*omega0));
 %-pi/4;
-%-1/2 * acot(2*mem / omega0 *(Gam-Gam/mem));%
+%-1/2 * acot(2*mem / omega0 *(Gam-Gam/mem));
 H_A5= @(t,k) -exp(beta_func(k)*t) .*cos(2*pi*t + phifunc(k))./(4*pi*sin(phifunc(k)));
 H_A13 = @(t,k) 2/(4*pi) *exp(beta_func(k).*t)*cos(2*pi*t + phifunc(k))*cos(-phifunc(k));
 
