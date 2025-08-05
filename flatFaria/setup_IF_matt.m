@@ -8,7 +8,7 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,Lk)
 %   Gam         -------- Amplitude of the shaking
 %   dt_desired  -------- Desired time step
 %% Set parameters
-mem = 0;
+mem = 0.95;
 gammaf = Gam;
 Gam = mem*Gam;
 Ny = Nx; 
@@ -145,11 +145,13 @@ K2_deriv = Kx_deriv.^2 + Ky_deriv.^2;
 %% Stuff for B4
 
 K_vec = linspace(0,Lk,Nk)';
+dk= K_vec(2)-K_vec(1);
+K_vec=K_vec+dk;
 K2_vec = K_vec.^2;
 K3_vec = K_vec.^3;
 
 
-h_gridsize=K_vec(2)-K_vec(1);
+h_gridsize=dk;
 b4_prefactor=-d0*M*G/(2*pi)*h_gridsize;
 
 %% A5 for H
@@ -165,7 +167,7 @@ kC= omega0 / (2 *(b0*g0 + sqrt(b0^2*g0^2 + omega0^2*(4*nu^2+b0*sig/rho))))^(1/2)
 C1=2*nu*kC^2/gammaf;
 
 phi_A6 = @ (k) (2*((4*nu^2 + b0*sig/rho)*kC^2)+b0*g0)+nu*kC*C1*(Gam-gammaf);
-phifunc = @(k) -1/2*acot( phi_A6(k)/nu*kC*omega0);
+phifunc = @(k) -pi/4;%-1/2*acot( phi_A6(k)/nu*kC*omega0);
 %-pi/4;
 %-1/2 * acot(2*mem / omega0 *(Gam-Gam/mem));%
 H_A5= @(t,k) -exp(beta_func(k)*t) .*cos(2*pi*t + phifunc(k))./(4*pi*sin(phifunc(k)));

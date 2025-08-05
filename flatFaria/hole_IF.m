@@ -12,7 +12,7 @@ mem = p.mem;
 resultdir= 'results/b4vFaria_1bc/';
 mkdir(resultdir)
 fname = [resultdir,sprintf('faria_N%d_Nk%dx_Lk%dx.mat',Nx,Nk,Lk)];
-[eta_b4, eta_faria]  = compare_H(p); 
+[eta_b4, eta_faria]  = compare_wave(p); 
 save(fname,'eta_b4','eta_faria','gamma','H','Nx','Lx','mem');
 end
 
