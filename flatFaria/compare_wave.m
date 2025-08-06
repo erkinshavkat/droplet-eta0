@@ -28,7 +28,7 @@ H_num_ax=plot(p.y,zeros(p.Nx,1),"LineWidth",2); hold on;
 H_formula_ax=plot(p.y,zeros(p.Nx,1),'--',"LineWidth",2);
 xlabel('Index'); ylabel('Value');
 xlim([-3,3])
-legend('faria','b4')
+legend('numerical H','A5+A14')
 
 % v = VideoWriter('moving b4.avi','Motion JPEG AVI');
 % v.FrameRate = 12; % 6 frames per second, adjust as needed
@@ -70,14 +70,14 @@ for n=1:p.nimpacts
             H_num_ax.YData=eta_num;
             H_formula_ax.YData=eta_formula;
 
-            ylim([-0.005 0.005])
+            ylim([-0.01 0.01])
 
 
             title(['Impact ' num2str(n) ' Step ' num2str(nn)]);
 
             % frame = getframe(gcf);
             % writeVideo(v, frame);
-            pause(1/24); 
+            pause(1/12); 
         end
         t= t+p.dt;
     end

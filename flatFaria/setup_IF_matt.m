@@ -8,10 +8,11 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,Lk)
 %   Gam         -------- Amplitude of the shaking
 %   dt_desired  -------- Desired time step
 %% Set parameters
-mem =0.95;
+mem =0.98;
 Gam = mem*Gam;
 Ny = Nx; 
 Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
+
 
 %% Grid, variable coefficient, and initial data:
 Nxy = Nx*Ny;
@@ -39,6 +40,11 @@ Gamma_neutral = @(k,h) sqrt(4./(g0*k*tanh(k*h)).^2.*( (dispEuler(k,h).^2+(2*nu*k
                                     -(omega0/2)^2).^2 + omega0.^2*(2*nu*k.^2).^2));
 
 [kf_mean   ,Gamma_max_mean] = fminsearch(@(k)Gamma_neutral(k,H),1300);
+
+b0=(tanh(kf_mean*H) / kf_mean);
+
+% kf_mean = sqrt(rho*omega0^2/(2*sqrt(b0)*(rho*g0*sqrt(b0)+sqrt(sig*rho*omega0^2+b0*rho^2*g0^2))));
+
 kf_deep=kf_mean*ones(Nx,Ny);
 Gamma_max_deep=Gamma_max_mean*ones(Nx,Ny);
 h_top_grid=H*ones(Nx,Ny);
@@ -61,7 +67,7 @@ drop_radius = (0.745/2)*10^(-3);
 
 %theta = 0.266*2*pi; %(0.042 xF/TF) at Me 0.99 % <<< OLD VALUE >>>
 %theta = (1 + 2 * 0.248) * pi; % <<< try this value first >>>
-theta = 0;%1.366 * pi; % <<< matt's testing value >>>
+theta = 0;%1.3 * pi; % <<< matt's testing value >>>
 
 drop_density  = 949;              % Density of drop (kg/m3)
 drop_mass = 4/3*pi*drop_radius^3*drop_density; % mass of drop (kg);
@@ -88,7 +94,6 @@ h0_deep     = h_top_grid./xF;
 d0_deep     = d_deep./xF;
 a0_deep     = 0;
 
-b0=(tanh(kf_mean*H) / kf_mean);
 d0=  b0/ xF;
 %% Dimensionless Faraday wavenumber
 kf0_deep     = kf_mean*xF;                   
@@ -169,9 +174,9 @@ kC= omega0 / (2 *(b0*g0 + sqrt(b0^2*g0^2 + omega0^2*(4*nu^2+b0*sig/rho))))^(1/2)
 C1=2*nu*kC^2/gammaf_dimensional;
 
 A6_numerator = @(k_dim) (2*kC^2*(4*nu^2 + b0*sig/rho) + b0*g0)*(k_dim-kC) + nu *kC*C1*(gamma_dimensional-gammaf_dimensional);
-phifunc = @(k) -1/2 *acot(A6_numerator(k/(2*pi)*kf_mean) / (nu*kC*omega0));
-%-pi/4;
-%-1/2 * acot(2*mem / omega0 *(Gam-Gam/mem));
+phifunc = @(k) -1/2 *atan2(1,A6_numerator(k/(2*pi)*kf_mean)/(nu*kC*omega0));
+% -pi/4
+% -1/2 * acot(2*mem / omega0 *(Gam-Gam/mem))
 H_A5= @(t,k) -exp(beta_func(k)*t) .*cos(2*pi*t + phifunc(k))./(4*pi*sin(phifunc(k)));
 H_A13 = @(t,k) 2/(4*pi) *exp(beta_func(k).*t)*cos(2*pi*t + phifunc(k))*cos(-phifunc(k));
 

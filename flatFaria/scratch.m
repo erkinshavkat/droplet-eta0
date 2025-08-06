@@ -1,31 +1,53 @@
-clear all; close all; clc;
-load("results/b4vfaria.mat")
-eta_b4_1 = eta_b4;
-eta_faria_1 = eta_faria;
+clear; close all; clc
+gamma=3.5588;
+H=0.005;
+Lx=16;
+Nx=128;
 
-load("results/b4vfaria_2x.mat")
-eta_b4_2 = eta_b4;
-eta_faria_2 = eta_faria;
+Nk=Nx; Lk=Lx;
+eta0=zeros(Nx);
+p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,Lk);
+p.xi = 0; p.yi = 0; p.ui= 0; p.vi = 0;
+p.nimpacts = 10;
 
-nframes = min([size(eta_b4_1,2), size(eta_faria_1,2), size(eta_b4_2,2), size(eta_faria_2,2)]);
+H1=zeros(length(p.K_vec),1);
+dH1= ones(length(p.K_vec),1);
+H2=zeros(length(p.K_vec),1);
+dH2= ones(length(p.K_vec),1);
 
-v = VideoWriter('compare_all_eta.avi','Motion JPEG AVI');
-v.FrameRate = 3;
-open(v);
-domain=linspace(-8,8,128);
-for frame = 1:nframes
-    clf;
-    plot(domain,eta_b4_1(:,frame),'LineWidth',2); hold on;
-    plot(domain,eta_b4_2(:,frame),'LineWidth',2);
-    plot(domain,eta_faria_1(:,frame),'--','LineWidth',2);
-    ylim([-0.01 0.01]);
-    xlim([-1,1])
-    legend({'b4 ','b4\_refine', ...
-            'faria'}, ...
-            'Location','best');
-    title(['Frame ' num2str(frame)]);
-    frame_img = getframe(gcf);
-    writeVideo(v, frame_img);
+
+%faria_ax=plot(p.y,zeros(p.Nx,1),'LineWidth',2);hold on;
+H1_ax=plot(p.K_vec/(2*pi),H1,'LineWidth',2);hold on;
+H2_ax=plot(p.K_vec/(2*pi),H2,':',"LineWidth",2);
+xlabel('k/kF'); ylabel('H');
+legend('H1','H2')
+
+t1= 0;
+t2=1.3/4;
+for n=1:p.nimpacts
+    
+    disp(['Impact number: ' num2str(n)])
+
+    for nn=1:p.nsteps_impact 
+
+        [H1, dH1] = H_eq_rkstep(H1,dH1, t1, p);
+        [H2, dH2] = H_eq_rkstep(H2,dH2, t2, p);
+
+
+        if mod(nn,2)==0
+            H1_ax.YData=H1;
+            H2_ax.YData=H2;
+
+
+            ylim([-0.5 0.5])
+
+
+            title(sprintf('mem=%.2f A5+A14, t=%f Tf', p.mem, t1));
+            pause(1/12); 
+        end
+        t1= t1+p.dt;
+        t2= t2+p.dt;
+    end
+
+
 end
-
-close(v);
