@@ -1,4 +1,4 @@
-function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,Lk)
+function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax)
 % Sets most of the parameters for the problem
 % Input: 
 %   Nx          -------- Number of points in x
@@ -8,7 +8,7 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,Lk)
 %   Gam         -------- Amplitude of the shaking
 %   dt_desired  -------- Desired time step
 %% Set parameters
-mem =0.98;
+mem =1;
 Gam = mem*Gam;
 Ny = Nx; 
 Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
@@ -40,10 +40,14 @@ Gamma_neutral = @(k,h) sqrt(4./(g0*k*tanh(k*h)).^2.*( (dispEuler(k,h).^2+(2*nu*k
                                     -(omega0/2)^2).^2 + omega0.^2*(2*nu*k.^2).^2));
 
 [kf_mean   ,Gamma_max_mean] = fminsearch(@(k)Gamma_neutral(k,H),1300);
-
+kf_mean = kf_mean*1.02;
 b0=(tanh(kf_mean*H) / kf_mean);
 
+% for i=1:10
 % kf_mean = sqrt(rho*omega0^2/(2*sqrt(b0)*(rho*g0*sqrt(b0)+sqrt(sig*rho*omega0^2+b0*rho^2*g0^2))));
+% b0=(tanh(kf_mean*H) / kf_mean);
+% end
+
 
 kf_deep=kf_mean*ones(Nx,Ny);
 Gamma_max_deep=Gamma_max_mean*ones(Nx,Ny);
@@ -148,7 +152,7 @@ K2_deriv = Kx_deriv.^2 + Ky_deriv.^2;
 
 %% Stuff for B4
 
-K_vec = linspace(0,Lk,Nk)';
+K_vec = linspace(kmin,kmax,Nk)';
 dk= K_vec(2)-K_vec(1);
 K_vec=K_vec+dk;
 K2_vec = K_vec.^2;
@@ -174,7 +178,7 @@ kC= omega0 / (2 *(b0*g0 + sqrt(b0^2*g0^2 + omega0^2*(4*nu^2+b0*sig/rho))))^(1/2)
 C1=2*nu*kC^2/gammaf_dimensional;
 
 A6_numerator = @(k_dim) (2*kC^2*(4*nu^2 + b0*sig/rho) + b0*g0)*(k_dim-kC) + nu *kC*C1*(gamma_dimensional-gammaf_dimensional);
-phifunc = @(k) -1/2 *atan2(1,A6_numerator(k/(2*pi)*kf_mean)/(nu*kC*omega0));
+phifunc = @(k) -pi/4;%-1/2 *atan2(1,A6_numerator(k/(2*pi)*kf_mean)/(nu*kC*omega0));
 % -pi/4
 % -1/2 * acot(2*mem / omega0 *(Gam-Gam/mem))
 H_A5= @(t,k) -exp(beta_func(k)*t) .*cos(2*pi*t + phifunc(k))./(4*pi*sin(phifunc(k)));

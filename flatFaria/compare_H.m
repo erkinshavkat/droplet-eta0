@@ -10,12 +10,14 @@ fig = figure('Position', [0, 0, 1500, 900]);
 
 H_num_ax=plot(p.K_vec/(2*pi),H_vec,'LineWidth',2);hold on;
 H_A5_ax=plot(p.K_vec/(2*pi),H_vec,':',"LineWidth",2);
+H_A14_ax=plot(p.K_vec/(2*pi),H_vec,'--',"LineWidth",2);
+H_sum_ax=plot(p.K_vec/(2*pi),H_vec,'-.',"LineWidth",2);
 
 
 xline(1,'k:','LineWidth',2);
 
 xlabel('k/k_F'); ylabel('H');
-legend('numerical','formula A5+A14')
+legend('numerical','A5','A14','A5+A14');
 
 % H_num_data=zeros(p.nimpacts*p.nsteps_impact,1);
 % H_A5_data=zeros(p.nimpacts*p.nsteps_impact,1);
@@ -32,15 +34,19 @@ for n=1:p.nimpacts
 
         [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t, p);
 
+        if mod(nn,1)==0
 
-        if mod(nn,2)==0
+            H_A5= arrayfun (@(k) p.H_A5(t, k), p.K_vec);
+            H_A14= arrayfun (@(k) p.H_A14(t, k), p.K_vec);
 
-            H_A5= arrayfun (@(k) p.H_A5(t,k)+p.H_A14(t, k), p.K_vec);
-            % H_num_data((n-1)*p.nsteps_impact + nn) = H_vec;
-            % H_A5_data((n-1)*p.nsteps_impact + nn) = H_A5;
             H_num_ax.YData=H_vec;
             H_A5_ax.YData=H_A5;
+            H_A14_ax.YData=H_A14;
+            H_sum_ax.YData=H_A5+H_A14;
 
+
+            % H_num_data((n-1)*p.nsteps_impact + nn) = H_vec;
+            % H_A5_data((n-1)*p.nsteps_impact + nn) = H_A5;
 
             ylim([-0.5 0.5])
 
@@ -49,7 +55,7 @@ for n=1:p.nimpacts
 
             % frame = getframe(gcf);
             % writeVideo(v, frame);
-            pause(1/12); 
+            pause(1/24); 
         end
         t= t+p.dt;
     end

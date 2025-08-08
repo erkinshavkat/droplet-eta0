@@ -40,7 +40,9 @@ for n=1:p.nimpacts
     x_data(n) = xi;    y_data(n) = yi;
 
     [ui, vi, phi_hat] = drop_impact_matt(xi, yi, ui, vi, phi_hat, eta_hat, p);
+    if n==1
     dH_num(:,n) = 1; 
+    end
 
     for nn=1:p.nsteps_impact 
 
@@ -50,7 +52,7 @@ for n=1:p.nimpacts
 
 
         if mod(nn,1)==0
-            for impact = 1:n
+            for impact = [1]
                 H_formula(:,impact) = p.H_A5(t-(impact-1), p.K_vec) + p.H_A14(t-(impact-1), p.K_vec);
             end
             
@@ -77,7 +79,7 @@ for n=1:p.nimpacts
 
             % frame = getframe(gcf);
             % writeVideo(v, frame);
-            pause(1/12); 
+            pause(1/6); 
         end
         t= t+p.dt;
     end
