@@ -6,7 +6,7 @@ function [eta_b4, eta_faria] = compare_wave(p)
 % phase). The new impact times are still stored in the vector t_data.
 % t = 0; % <<< OLD VALUE >>>
 t = p.theta/(4*pi);
-
+t_forH=  0;
 
 phi = p.phi0; 
 eta = p.eta0; 
@@ -27,25 +27,26 @@ xlabel('Index'); ylabel('Value');
 xlim([-3,3])
 legend('faria','b4')
 
-v = VideoWriter('moving b4.avi','Motion JPEG AVI');
-v.FrameRate = 12; % 6 frames per second, adjust as needed
-open(v);
+% v = VideoWriter('moving b4.avi','Motion JPEG AVI');
+% v.FrameRate = 12; % 6 frames per second, adjust as needed
+% open(v);
 
 eta_b4=zeros(p.Nx,p.nimpacts*p.nsteps_impact); eta_faria = zeros(p.Nx,p.nimpacts*p.nsteps_impact);
 H_data = zeros(length(p.K_vec),p.nimpacts*p.nsteps_impact);
 for n=1:p.nimpacts
     
     disp(['Impact number: ' num2str(n)])
-    yi=(n-1)*0.5-2;
     x_data(n) = xi;    y_data(n) = yi;
+
+
 
     [ui, vi, phi_hat] = drop_impact_matt(xi, yi, ui, vi, phi_hat, eta_hat, p);
     dH_vec(:,n) = 1; 
 
     for nn=1:p.nsteps_impact 
-        [phi_hat, eta_hat] = evolve_wave_IF_rkstep(phi_hat, eta_hat, t + (nn -1)*p.dt, p); 
+        [phi_hat, eta_hat] = evolve_wave_IF_rkstep(phi_hat, eta_hat, t, p); 
         %[b1k.eta_hat, b1k.etaprime_hat] = b1k_evolve_wave_rkstep(b1k.eta_hat,b1k.etaprime_hat, t + (nn -1)*p.dt, p); 
-        [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t + (nn -1)*p.dt, p);
+        [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t_forH, p);
 
 
 
@@ -69,20 +70,19 @@ for n=1:p.nimpacts
 
             title(['Impact ' num2str(n) ' Step ' num2str(nn)]);
 
-            frame = getframe(gcf);
-            writeVideo(v, frame);
-            pause(1/48); % Optional: comment out or keep for live viewing
+            % frame = getframe(gcf);
+            % writeVideo(v, frame);
+            pause(1/48); 
         end
-
+        t = t+p.dt;
+        t_forH = t_forH + p.dt;
     end
-
-    t = t+p.impact_interval;
 
 end
 
 
-close(v);
-close all;
+% close(v);
+% close all;
 
 % imagesc([0,p.Lk/(2*pi)],[0,3],H_data');
 % colorbar;
