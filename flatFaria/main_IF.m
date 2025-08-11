@@ -15,7 +15,7 @@ Nx=128;
 eta0=zeros(Nx,Nx);
 Nk=Nx; Lk=Lx;
 
-hole_IF(0,0,0,0,gamma,H,Nx,Lx,Nk*4,0,4*pi);
+hole_IF(0,0,0,0,gamma,H,Nx,Lx,Nk*2,0,3*pi);
 
 % p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,Lk);
 % rho=p.rho; g=p.g0; sig=p.sig; b0=p.b0; rb0=sqrt(p.b0); omega0=p.omega0; nu=p.nu;

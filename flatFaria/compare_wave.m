@@ -23,37 +23,42 @@ dH_num= zeros(length(p.K_vec),p.nimpacts);
 
 H_formula=zeros(length(p.K_vec),p.nimpacts);
 
+
 %faria_ax=plot(p.y,zeros(p.Nx,1),'LineWidth',2);hold on;
+
+plotting=false;
+
+fig = figure('Position', [0, 0, 1500, 900]); 
 H_num_ax=plot(p.y,zeros(p.Nx,1),"LineWidth",2); hold on;
 H_formula_ax=plot(p.y,zeros(p.Nx,1),'--',"LineWidth",2);
 xlabel('Index'); ylabel('Value');
 xlim([-3,3])
 legend('numerical H','A5+A14')
-
-% v = VideoWriter('moving b4.avi','Motion JPEG AVI');
-% v.FrameRate = 12; % 6 frames per second, adjust as needed
-% open(v);
-
+v = VideoWriter('vis/b4 A5tanh long bouncer.avi','Motion JPEG AVI');
+v.FrameRate = 24; % 6 frames per second, adjust as needed
+open(v);
 for n=1:p.nimpacts
     
     disp(['Impact number: ' num2str(n)])
     x_data(n) = xi;    y_data(n) = yi;
 
     [ui, vi, phi_hat] = drop_impact_matt(xi, yi, ui, vi, phi_hat, eta_hat, p);
-    if n==1
+
     dH_num(:,n) = 1; 
-    end
+
+
 
     for nn=1:p.nsteps_impact 
 
-        [phi_hat, eta_hat] = evolve_wave_IF_rkstep(phi_hat, eta_hat, t, p); 
+        %[phi_hat, eta_hat] = evolve_wave_IF_rkstep(phi_hat, eta_hat, t, p); 
         %[b1k.eta_hat, b1k.etaprime_hat] = b1k_evolve_wave_rkstep(b1k.eta_hat,b1k.etaprime_hat, t + (nn -1)*p.dt, p); 
         [H_num, dH_num] = H_eq_rkstep(H_num,dH_num, t, p);
 
 
-        if mod(nn,1)==0
-            for impact = [1]
-                H_formula(:,impact) = p.H_A5(t-(impact-1), p.K_vec) + p.H_A14(t-(impact-1), p.K_vec);
+        if plotting
+            for impact = 1:n
+                elapsed_time = t - (impact - 1);
+                H_formula(:,impact) = p.A5_activation(elapsed_time,0.2654,1.7319) *p.H_A5(elapsed_time, p.K_vec) + p.H_A14(elapsed_time, p.K_vec);
             end
             
             b4_eta_compute = @(x, y, impact, H) p.b4_prefactor * sum(p.K3_vec .* H(:,impact) .* besselj(0, p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
@@ -72,14 +77,14 @@ for n=1:p.nimpacts
             H_num_ax.YData=eta_num;
             H_formula_ax.YData=eta_formula;
 
-            ylim([-0.01 0.01])
+            ylim([-0.02 0.02])
 
 
             title(['Impact ' num2str(n) ' Step ' num2str(nn)]);
 
-            % frame = getframe(gcf);
-            % writeVideo(v, frame);
-            pause(1/6); 
+            frame = getframe(gcf);
+            writeVideo(v, frame);
+            pause(1/24); 
         end
         t= t+p.dt;
     end
