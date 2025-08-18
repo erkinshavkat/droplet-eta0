@@ -8,6 +8,8 @@ function [eta_b4, eta_faria] = compare_wave(p)
 t = p.theta/(4*pi);
 
 
+
+
 phi = p.phi0; 
 eta = p.eta0; 
 phi_hat = fft2(phi); 
@@ -20,6 +22,10 @@ y_data= zeros(p.nimpacts,1);
 
 H_num=zeros(length(p.K_vec),p.nimpacts);
 dH_num= zeros(length(p.K_vec),p.nimpacts);
+H_A14=zeros(length(p.K_vec),p.nimpacts);
+H_A5=zeros(length(p.K_vec),p.nimpacts);
+H_A5_activate=zeros(length(p.K_vec),p.nimpacts);
+
 
 H_formula=zeros(length(p.K_vec),p.nimpacts);
 
@@ -29,12 +35,17 @@ H_formula=zeros(length(p.K_vec),p.nimpacts);
 plotting=false;
 
 fig = figure('Position', [0, 0, 1500, 900]); 
-H_num_ax=plot(p.y,zeros(p.Nx,1),"LineWidth",2); hold on;
-H_formula_ax=plot(p.y,zeros(p.Nx,1),'--',"LineWidth",2);
+
+H_num_ax=plot(p.y,zeros(p.Nx,1),'LineWidth',2);hold on;
+% H_A5_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),':',"LineWidth",2);
+% H_A14_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),'--',"LineWidth",2);
+H_test_ax=plot(p.y,zeros(p.Nx,1),'-.',"LineWidth",2);
+H_active_ax=plot(p.y,zeros(p.Nx,1),'-.',"LineWidth",2);
+
 xlabel('Index'); ylabel('Value');
 xlim([-3,3])
-legend('numerical H','A5+A14')
-v = VideoWriter('vis/b4 A5tanh long bouncer.avi','Motion JPEG AVI');
+legend('numerical','A5+A14','A5*tanh + A14');
+v = VideoWriter('vis/b4 tanh vs notanh long bouncer.avi','Motion JPEG AVI');
 v.FrameRate = 24; % 6 frames per second, adjust as needed
 open(v);
 for n=1:p.nimpacts
@@ -55,36 +66,43 @@ for n=1:p.nimpacts
         [H_num, dH_num] = H_eq_rkstep(H_num,dH_num, t, p);
 
 
-        if plotting
+        if n > p.nimpacts-5
             for impact = 1:n
                 elapsed_time = t - (impact - 1);
-                H_formula(:,impact) = p.A5_activation(elapsed_time,0.2654,1.7319) *p.H_A5(elapsed_time, p.K_vec) + p.H_A14(elapsed_time, p.K_vec);
+                H_A14(:,impact) = p.H_A14(elapsed_time,p.K_vec);
+                H_A5_activate(:,impact) = p.A5_activation(elapsed_time,3.0780,-2.85714) *p.H_A5(elapsed_time, p.K_vec);
+                H_A5(:,impact) = p.H_A5(elapsed_time, p.K_vec);
             end
-            
+
             b4_eta_compute = @(x, y, impact, H) p.b4_prefactor * sum(p.K3_vec .* H(:,impact) .* besselj(0, p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
             
             
-            eta_compute_numerical = @(y) sum(arrayfun(@(impact) b4_eta_compute(p.x(p.Nx/2), y, impact, H_num), 1:n));
-            eta_compute_formula = @(y) sum(arrayfun(@(impact) b4_eta_compute(p.x(p.Nx/2), y, impact, H_formula), 1:n));
+            eta_centerline = @(y,H) sum(arrayfun(@(impact) b4_eta_compute(p.x(p.Nx/2), y, impact, H), 1:n));
+
+            % H_splice = H_num;
+            % splice_split=0.8;
+            % mask = p.K_vec <= splice_split*2*pi;
+            % H_splice(mask,:)=H_A5_activate(mask,:)+H_A14(mask,:);
 
 
             
-            eta_num = arrayfun(eta_compute_numerical, p.y);
-
-            eta_formula = arrayfun(eta_compute_formula, p.y);
+            eta_num = arrayfun(@(y)eta_centerline(y,H_num), p.y);
+            eta_active = arrayfun(@(y)eta_centerline(y,H_A5_activate+H_A14), p.y);
+            eta_sum= arrayfun(@(y)eta_centerline(y,H_A5+H_A14), p.y);
 
             %faria_ax.YData=faria_plot;
             H_num_ax.YData=eta_num;
-            H_formula_ax.YData=eta_formula;
+            H_active_ax.YData=eta_active;
+            H_test_ax.YData=eta_sum;
 
             ylim([-0.02 0.02])
 
 
-            title(['Impact ' num2str(n) ' Step ' num2str(nn)]);
-
+            %title(sprintf('mem=%.2f, t=%f Tf, splice [formula|%.2f kF|numerical]', p.mem, t,splice_split));
+            title(sprintf('mem=%.2f, t=%f Tf', p.mem, t));
             frame = getframe(gcf);
             writeVideo(v, frame);
-            pause(1/24); 
+            % pause(1/24); 
         end
         t= t+p.dt;
     end

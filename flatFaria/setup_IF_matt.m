@@ -71,7 +71,7 @@ drop_radius = (0.745/2)*10^(-3);
 
 %theta = 0.266*2*pi; %(0.042 xF/TF) at Me 0.99 % <<< OLD VALUE >>>
 %theta = (1 + 2 * 0.248) * pi; % <<< try this value first >>>
-theta = 1.3 * pi; % <<< matt's testing value >>>
+theta = 0;%1.3 * pi; % <<< matt's testing value >>>
 
 drop_density  = 949;              % Density of drop (kg/m3)
 drop_mass = 4/3*pi*drop_radius^3*drop_density; % mass of drop (kg);
@@ -182,7 +182,7 @@ phifunc = @(k) -pi/4;%-1/2 *atan2(1,A6_numerator(k/(2*pi)*kf_mean)/(nu*kC*omega0
 % -pi/4
 % -1/2 * acot(2*mem / omega0 *(Gam-Gam/mem))
 
-A5_activation = @(t,s,m) (tanh(t/s - m)+1)/2;
+A5_activation = @(t,s,m) (tanh(t*s + m)+1)/2;
 
 H_A5= @(t,k) (- exp(beta_func(k)*t)) .*cos(2*pi*t + phifunc(k))./(4*pi*sin(phifunc(k)));
 H_A13 = @(t,k) 2/(4*pi) *exp(beta_func(k).*t)*cos(2*pi*t + phifunc(k))*cos(-phifunc(k));
