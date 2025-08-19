@@ -1,5 +1,5 @@
 function [eta_b4, eta_faria] = compare_H(p)
-t = p.theta/(4*pi);
+t = 0;%p.theta/(4*pi);
 
 
 H_vec=zeros(length(p.K_vec),p.nimpacts);
@@ -17,7 +17,7 @@ H_active_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),'-.',"LineWidth",2);
 xline(1,'k:','LineWidth',2);
 
 xlabel('k/k_F'); ylabel('H');
-legend('numerical','spliced','A5*tanh + A14');
+legend('numerical','A5+A14','A5*tanh + A14');
 
 % H_num_data=zeros(p.nimpacts*p.nsteps_impact,1);
 % H_A5_data=zeros(p.nimpacts*p.nsteps_impact,1);
@@ -36,7 +36,7 @@ for n=1:p.nimpacts
 
         [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t, p);
 
-        if n>p.nimpacts-5
+        if n>20
             for impact = 1:n
                 elapsed_time = t - (impact - 1);
                 H_A14(:,impact) = p.H_A14(elapsed_time,p.K_vec);
