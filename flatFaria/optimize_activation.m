@@ -16,7 +16,7 @@ end
 
 activ=p.A5_activation;
 
-H_formula = @(t, k,s,m) activ(t,s,m) * p.H_A5(t, k) + p.H_A14(t, k);
+H_formula = @(t, k,s,m) activ(t,s,m) * p.H_A13(t,0, k) + p.H_A14(t, k);
 
 [t_domain ,k_domain] = meshgrid(t_vec, p.K_vec);
 

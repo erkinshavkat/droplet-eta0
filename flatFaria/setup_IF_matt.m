@@ -71,7 +71,7 @@ drop_radius = (0.745/2)*10^(-3);
 
 %theta = 0.266*2*pi; %(0.042 xF/TF) at Me 0.99 % <<< OLD VALUE >>>
 %theta = (1 + 2 * 0.248) * pi; % <<< try this value first >>>
-theta = 1.3*pi; % <<< matt's testing value >>>
+theta = 1.5*pi; % <<< matt's testing value >>>
 
 drop_density  = 949;              % Density of drop (kg/m3)
 drop_mass = 4/3*pi*drop_radius^3*drop_density; % mass of drop (kg);
@@ -106,7 +106,7 @@ kf0_deep     = kf_mean*xF;
 % <<< MATT >>> changed the definition of vertical vibration to be
 % consistent with my previous research (JFM 2020), for familiarity
 % g = @(t) G*(1 + Gam*cos(4*pi*t-theta)); % <<< OLD VALUE >>>
-g = @(t) G*(1 - Gam * cos(4*pi*t+theta));
+g = @(t) G*(1 - Gam * cos(4*pi*t));
 
 %% Time parameters
 dt = dt_desired;
@@ -178,14 +178,14 @@ kC= omega0 / (2 *(b0*g0 + sqrt(b0^2*g0^2 + omega0^2*(4*nu^2+b0*sig/rho))))^(1/2)
 C1=2*nu*kC^2/gammaf_dimensional;
 
 A6_numerator = @(k_dim) (2*kC^2*(4*nu^2 + b0*sig/rho) + b0*g0)*(k_dim-kC) + nu *kC*C1*(gamma_dimensional-gammaf_dimensional);
-phifunc = @(k) -pi/4-theta;%-1/2 *atan2(1,A6_numerator(k/(2*pi)*kf_mean)/(nu*kC*omega0));
+phifunc = @(k) -pi/4;%-1/2 *atan2(1,A6_numerator(k/(2*pi)*kf_mean)/(nu*kC*omega0));
 % -pi/4
 % -1/2 * acot(2*mem / omega0 *(Gam-Gam/mem))
 
 A5_activation = @(t,s,m) (tanh(t*s + m)+1)/2;
 
 H_A5= @(t,k) (- exp(beta_func(k)*t)) .*cos(2*pi*t +phifunc(k))./(4*pi*sin(phifunc(k)));
-H_A13 = @(t,k) 2/(4*pi) *exp(beta_func(k).*t)*cos(2*pi*t + phifunc(k))*cos(-phifunc(k));
+H_A13 = @(t,s,k) 2/(4*pi) *exp(beta_func(k).*(t-s))*cos(2*pi*t + phifunc(k))*cos(2*pi*s-phifunc(k));
 
 
 
