@@ -6,16 +6,20 @@ addpath(genpath(pwd))
 
 
 tic
-%gamma=3.557; %H num threshold
-gamma=3.628; %ad hoc adjusted kf_mean
+gamma=4.4974;
 H=0.005;
-Lx=16;
-Nx=128;
 
+% gamma=5.6075;
+% H=0.001
+
+% Lx=32;
+% Nx=1024;
+Lx=16
+Nx=256
 eta0=zeros(Nx,Nx);
 Nk=Nx; Lk=Lx;
-
-hole_IF(0,0,0,0,gamma,H,Nx,Lx,Nk*2,0,3*pi);
+theta=1.2;
+hole_IF(0,0,0,0,gamma,H,Nx,Lx,Nk*2,0,3*pi,theta);
 
 % p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,Lk);
 % rho=p.rho; g=p.g0; sig=p.sig; b0=p.b0; rb0=sqrt(p.b0); omega0=p.omega0; nu=p.nu;

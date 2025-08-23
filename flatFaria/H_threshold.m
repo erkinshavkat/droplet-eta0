@@ -5,12 +5,12 @@ addpath('solvers')
 % The threshold test should be run with the SAME Nx and Lx as the
 % simulations of interest. Also make sure that the geometry is the same
 Nx=1024;
-Lx=48;
-H=0.005;
+Lx=32;
+H=0.001;
 Nk=Nx;
 eta0=zeros(Nx);
 % Gam = 3.8:0.01:3.91;
-Gams = [3.6,3.65,3.7];
+Gams = linspace(5.4,5.5,5);
 
 % Create figure for animation of (p.K_vec, H_vec)
 
@@ -19,7 +19,7 @@ growth_rates= zeros(length(Gams), 1);
 for i = 1:length(Gams)
     i
     gamma = Gams(i);
-    p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,2*pi*0.9,2*pi*1.1);
+    p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,2*pi*0.9,2*pi*1.1,1.1);
     p.nimpacts = 300;
     H_vec = zeros(length(p.K_vec),1);
     dH_vec = ones(length(p.K_vec),1);

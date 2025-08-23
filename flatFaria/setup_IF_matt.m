@@ -1,4 +1,4 @@
-function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax)
+function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax,theta)
 % Sets most of the parameters for the problem
 % Input: 
 %   Nx          -------- Number of points in x
@@ -8,7 +8,7 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax)
 %   Gam         -------- Amplitude of the shaking
 %   dt_desired  -------- Desired time step
 %% Set parameters
-mem =0.98;
+mem =1;
 Gam = mem*Gam;
 Ny = Nx; 
 Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
@@ -27,7 +27,7 @@ nu        = 2*10^(-5);        % Kinematic viscosity (m2/s)
 nu        = 0.865*nu;       % 70Hz - Shallow h=1.5 mm (og. 0.865)
 rho       = 949;              % Density (kg/m3);
 sig       = 0.0206;           % Surface tension (N/m);
-omega0     = 70*2*pi;         % Angular frequency in 1/s
+omega0     = 80*2*pi;         % Angular frequency in 1/s
 g0         = 9.81;             % Gravity in m/s
 
 %% Dispersion relation for inviscid surface waves
@@ -40,7 +40,7 @@ Gamma_neutral = @(k,h) sqrt(4./(g0*k*tanh(k*h)).^2.*( (dispEuler(k,h).^2+(2*nu*k
                                     -(omega0/2)^2).^2 + omega0.^2*(2*nu*k.^2).^2));
 
 [kf_mean   ,Gamma_max_mean] = fminsearch(@(k)Gamma_neutral(k,H),1300);
-kf_mean = kf_mean*1.02;
+% kf_mean = kf_mean*1.02;
 b0=(tanh(kf_mean*H) / kf_mean);
 
 % for i=1:10
@@ -71,7 +71,7 @@ drop_radius = (0.745/2)*10^(-3);
 
 %theta = 0.266*2*pi; %(0.042 xF/TF) at Me 0.99 % <<< OLD VALUE >>>
 %theta = (1 + 2 * 0.248) * pi; % <<< try this value first >>>
-theta = 1.5*pi; % <<< matt's testing value >>>
+theta = theta*pi; % <<< matt's testing value >>>
 
 drop_density  = 949;              % Density of drop (kg/m3)
 drop_mass = 4/3*pi*drop_radius^3*drop_density; % mass of drop (kg);
@@ -90,7 +90,7 @@ Bo          = sig*TF^2/(rho*xF^3);
 G           = g0*TF^2/xF;
 M           = drop_mass./(rho*xF^3); % 
 cf_air      = 6*pi*drop_radius*mu_air*TF/drop_mass; % Air drag (vector valued for several drops)
-c4          = 0.17; % Coefficient of restitution (Molacek)
+c4          = 0.05; % Coefficient of restitution (Molacek)
 cf_impact   = c4*sqrt(rho*drop_radius/sig)*TF*g0; % Dissipation during impact
 
 %% Dimensionless depth
@@ -148,8 +148,6 @@ kx_deriv =  2*pi*1i/Lx*[0:(Nx/2-1) (-Nx/2):-1];
 ky_deriv =  2*pi*1i/Ly*[0:(Ny/2-1) (-Ny/2):-1];
 [Kx_deriv,Ky_deriv] = meshgrid(kx_deriv,ky_deriv);
 K2_deriv = Kx_deriv.^2 + Ky_deriv.^2;
-
-
 %% Stuff for B4
 
 K_vec = linspace(kmin,kmax,Nk)';
@@ -237,5 +235,17 @@ p = struct;
 
 %use dynamic fieldnames
 for index = 1:numel(varList)
-    p.(varList{index}) = eval(varList{index});
+    dataType=class(eval(varList{index}));
+    
+    if strcmp(dataType,'double')
+        if canUseGPU
+            p.(varList{index}) = gpuArray(eval(varList{index}));
+        else
+            p.(varList{index}) = eval(varList{index});
+        end
+    else
+    
+        % disp([varList{index} '  ' dataType ' is not data array'])
+        p.(varList{index}) = eval(varList{index});
+    end
 end
