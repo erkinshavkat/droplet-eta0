@@ -36,16 +36,20 @@ plotting=false;
 
 fig = figure('Position', [0, 0, 1500, 900]); 
 
-H_num_ax=plot(p.y,zeros(p.Nx,1),'LineWidth',2);hold on;
+
+plot_range = 8;
+
+plot_domain=-plot_range:p.hy:plot_range;
+H_num_ax=plot(plot_domain,0*plot_domain,'LineWidth',2);hold on;
 % H_A5_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),':',"LineWidth",2);
 % H_A14_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),'--',"LineWidth",2);
-H_test_ax=plot(p.y,zeros(p.Nx,1),'-.',"LineWidth",2);
-H_active_ax=plot(p.y,zeros(p.Nx,1),'-.',"LineWidth",2);
+H_test_ax=plot(plot_domain,0*plot_domain,'-.',"LineWidth",2);
+H_active_ax=plot(plot_domain,0*plot_domain,'-.',"LineWidth",2);
 
-xlabel('Index'); ylabel('Value');
-xlim([-3,3])
+xlim([-plot_range,plot_range])
+
 legend('numerical','A13+A14','A13*tanh + A14');
-v = VideoWriter('vis/b4 A13 with phase.avi','Motion JPEG AVI');
+v = VideoWriter('vis/b4 A13 bouncer, scaled kf.avi','Motion JPEG AVI');
 v.FrameRate = 24; % 6 frames per second, adjust as needed
 open(v);
 
@@ -53,8 +57,14 @@ num_waveheight=[];
 formula_waveheight=[];
 activate_waveheight=[];
 t_vec=[];
+
+trajy=zeros(p.nimpacts,1);%linspace(-1,1,p.nimpacts);
+dtraj=trajy(2)-trajy(1);
+
+K_vec_scaled = p.K_vec*1.015;
+K3_vec_scaled = K_vec_scaled.^3;
 for n=1:p.nimpacts
-    
+    xi=0;yi=trajy(n);
     disp(['Impact number: ' num2str(n)])
     x_data(n) = xi;    y_data(n) = yi;
 
@@ -78,10 +88,11 @@ for n=1:p.nimpacts
                 elapsed_time = t - s;
                 H_A14(:,impact) = p.H_A14(elapsed_time,p.K_vec);
                 H_A13(:,impact) = p.H_A13(t,s,p.K_vec);
-                H_A13_activate(:,impact) = p.A5_activation(elapsed_time,3.5369,-1.6681).*p.H_A13(t,s,p.K_vec);
+                H_A13_activate(:,impact) = p.A5_activation(elapsed_time,0.8).*p.H_A13(t,s,p.K_vec);
             end
 
-            b4_eta_compute = @(x, y, impact, H) p.b4_prefactor * sum(p.K3_vec .* H(:,impact) .* besselj(0, p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
+            b4_eta_compute = @(x, y, impact, H) 1.015*p.b4_prefactor * sum(K3_vec_scaled.* H(:,impact) .* ...
+            besselj(0, K_vec_scaled .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
             
             
             eta_centerline = @(y,H) sum(arrayfun(@(impact) b4_eta_compute(p.x(p.Nx/2), y, impact, H), 1:n));
@@ -90,17 +101,16 @@ for n=1:p.nimpacts
             % splice_split=0.8;
             % mask = p.K_vec <= splice_split*2*pi;
             % H_splice(mask,:)=H_A5_activate(mask,:)+H_A14(mask,:);
-            disp(size(H_A13))
 
             
-            eta_num = arrayfun(@(y)eta_centerline(y,H_num), p.y);
-            eta_active = arrayfun(@(y)eta_centerline(y,H_A13_activate+H_A14), p.y);
-            eta_sum= arrayfun(@(y)eta_centerline(y,H_A13+H_A14), p.y);
+            eta_num = arrayfun(@(y)eta_centerline(y,H_num), plot_domain);
+            eta_active = arrayfun(@(y)eta_centerline(y,H_A13_activate+H_A14), plot_domain);
+            % eta_sum= arrayfun(@(y)eta_centerline(y,H_A13+H_A14), plot_domain);
 
             %faria_ax.YData=faria_plot;
             H_num_ax.YData=eta_num;
             H_active_ax.YData=eta_active;
-            H_test_ax.YData=eta_sum;
+            % H_test_ax.YData=eta_sum;
 
             ylim([-0.03 0.03])
 
@@ -114,19 +124,20 @@ for n=1:p.nimpacts
         t= t+p.dt;
 
 
-        % if n>28
+        % if n>27
+        %     next_x = xi ; next_y=yi+dtraj;
         %     for impact = 1:n
         %         s = impact_ts(impact);
         %         elapsed_time = t - s;
         %         H_A14(:,impact) = p.H_A14(elapsed_time,p.K_vec);
         %         H_A13(:,impact) = p.H_A13(t,s,p.K_vec);
-        %         H_A13_activate(:,impact) = p.A5_activation(elapsed_time,3.5369,-1.6681).*p.H_A13(t,s,p.K_vec);
+        %         H_A13_activate(:,impact) = p.A5_activation(elapsed_time,0.7775).*p.H_A13(t,s,p.K_vec);
         %     end
         %     b4_eta_compute = @(x, y, impact, H) p.b4_prefactor * sum(p.K3_vec .* H(:,impact) .* besselj(0, p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
         %     eta_centerline = @(x,y,H) sum(arrayfun(@(impact) b4_eta_compute(x, y, impact, H), 1:n));
-        %     num_waveheight=([num_waveheight,eta_centerline(0,0,H_num)]);
-        %     formula_waveheight=([formula_waveheight,eta_centerline(0,0,H_A13+H_A14)]);
-        %     activate_waveheight=([activate_waveheight,eta_centerline(0,0,H_A13_activate+H_A14)]);
+        %     num_waveheight=([num_waveheight,eta_centerline(next_x,next_y,H_num)]);
+        %     formula_waveheight=([formula_waveheight,eta_centerline(next_x,next_y,H_A13+H_A14)]);
+        %     activate_waveheight=([activate_waveheight,eta_centerline(next_x,next_y,H_A13_activate+H_A14)]);
         %     t_vec=[t_vec,t];
         % end
 
@@ -134,17 +145,17 @@ for n=1:p.nimpacts
 
 end
 
-plot(t_vec, abs(num_waveheight-formula_waveheight),"LineWidth",2);hold on
-title(sprintf('eta difference at (0,0), theta=%.2fpi', p.theta/pi));
+% plot(t_vec, num_waveheight,"LineWidth",2);hold on
+% title(sprintf('eta difference at (0,0), theta=%.2fpi', p.theta/pi));
+% plot(t_vec, formula_waveheight,"LineWidth",2);
+% plot(t_vec, activate_waveheight,"LineWidth",2);
+% for i=28:p.nimpacts
+%     xline( p.theta/(4*pi) + i ,"LineStyle",':','LineWidth',2)
+% end
+% legend('num','no tanh','tanh')
+% ylim([0 0.012])
 
-plot(t_vec, abs(num_waveheight-activate_waveheight),"LineWidth",2);
-for i=28:p.nimpacts
-    xline( p.theta/(4*pi) + i ,"LineStyle",':','LineWidth',2)
-end
-legend('no tanh','tanh')
-ylim([0 0.012])
-
-saveas(gcf,sprintf('vis/Wave error 00 theta %.2fpi.png',p.theta/pi))
+% saveas(gcf,sprintf('vis/Wave error 00 theta %.2fpi.png',p.theta/pi))
 close(v);
 % close all;
 

@@ -8,7 +8,7 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax,theta)
 %   Gam         -------- Amplitude of the shaking
 %   dt_desired  -------- Desired time step
 %% Set parameters
-mem =1;
+mem =0.99;
 Gam = mem*Gam;
 Ny = Nx; 
 Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
@@ -180,7 +180,7 @@ phifunc = @(k) -pi/4;%-1/2 *atan2(1,A6_numerator(k/(2*pi)*kf_mean)/(nu*kC*omega0
 % -pi/4
 % -1/2 * acot(2*mem / omega0 *(Gam-Gam/mem))
 
-A5_activation = @(t,s,m) (tanh(t*s + m)+1)/2;
+A5_activation = @(t,tau) tanh(t/tau);
 
 H_A5= @(t,k) (- exp(beta_func(k)*t)) .*cos(2*pi*t +phifunc(k))./(4*pi*sin(phifunc(k)));
 H_A13 = @(t,s,k) 2/(4*pi) *exp(beta_func(k).*(t-s))*cos(2*pi*t + phifunc(k))*cos(2*pi*s-phifunc(k));

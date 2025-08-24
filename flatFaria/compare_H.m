@@ -7,12 +7,13 @@ dH_vec= zeros(length(p.K_vec),p.nimpacts);
 
 fig = figure('Position', [0, 0, 1500, 900]); 
 
+K_vec_scaled = p.K_vec*1.015;
 
 H_num_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),'LineWidth',2);hold on;
 % H_A5_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),':',"LineWidth",2);
 % H_A14_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),'--',"LineWidth",2);
-H_sum_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),'-.',"LineWidth",2);
-H_active_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),'-.',"LineWidth",2);
+H_sum_ax=plot(K_vec_scaled/(2*pi),zeros(p.Nk,1),'-.',"LineWidth",2);
+H_active_ax=plot(K_vec_scaled/(2*pi),zeros(p.Nk,1),'-.',"LineWidth",2);
 
 xline(1,'k:','LineWidth',2);
 
@@ -23,9 +24,9 @@ legend('numerical','A13 + A14','A13*tanh + A14');
 % H_A5_data=zeros(p.nimpacts*p.nsteps_impact,1);
 
 
-v = VideoWriter(sprintf('vis/A13 tanh vs no tanh theta %.2fpi.avi',p.theta/pi),'Motion JPEG AVI');
-v.FrameRate = 24;
-open(v);
+% v = VideoWriter(sprintf('vis/A13 tanh vs no tanh theta %.2fpi.avi',p.theta/pi),'Motion JPEG AVI');
+% v.FrameRate = 24;
+% open(v);
 L2errs=zeros(p.nimpacts*p.nsteps_impact,1);
 
 for n=1:p.nimpacts
@@ -45,7 +46,7 @@ for n=1:p.nimpacts
                 elapsed_time = t - s;
                 H_A14(:,impact) = p.H_A14(elapsed_time,p.K_vec);
                 H_A13(:,impact) = p.H_A13(t,s,p.K_vec);
-                H_A13_activation(:,impact) = p.A5_activation(elapsed_time,3.5369,-1.6681) *p.H_A13(t,s,p.K_vec);
+                H_A13_activation(:,impact) = p.A5_activation(elapsed_time,0.7775) *p.H_A13(t,s,p.K_vec);
 
                 %s=3.078, m = -1.5311
             end
@@ -53,6 +54,7 @@ for n=1:p.nimpacts
             sum_H_formula=sum(H_A13+H_A14,2);
             sum_H_activate=sum(H_A13_activation+H_A14,2);
             
+
 
 
             H_num_ax.YData=sum_H_num;
@@ -72,9 +74,9 @@ for n=1:p.nimpacts
 
             title(sprintf('mem=%.2f, t=%f Tf, theta=%.2fpi', p.mem, t,p.theta/pi));
 
-            frame = getframe(gcf);
-            writeVideo(v, frame);
-            % pause(1/24); 
+            % frame = getframe(gcf);
+            % writeVideo(v, frame);
+            pause(1/24); 
         end
     end
 end

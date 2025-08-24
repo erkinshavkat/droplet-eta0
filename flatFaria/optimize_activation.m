@@ -16,13 +16,13 @@ end
 
 activ=p.A5_activation;
 
-H_formula = @(t, k,s,m) activ(t,s,m) * p.H_A13(t,0, k) + p.H_A14(t, k);
+H_formula = @(t, k,tau) activ(t,tau) * p.H_A13(t,0, k) + p.H_A14(t, k);
 
 [t_domain ,k_domain] = meshgrid(t_vec, p.K_vec);
 
-compute_H_formula = @(s,m) arrayfun(@(t, k) H_formula(t, k, s, m), t_domain, k_domain);
-error = @(s,m) norm(H_num_data - compute_H_formula(s,m), 'fro');
-mins=fminsearch(@(x) error(x(1), x(2)), [1, 0.5]);
+compute_H_formula = @(tau) arrayfun(@(t, k) H_formula(t, k, tau), t_domain, k_domain);
+error = @(tau) norm(H_num_data - compute_H_formula(tau), 'fro');
+mins=fminsearch(@(tau) error(tau), 1);
 mins
 end
 
