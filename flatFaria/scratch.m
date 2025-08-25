@@ -55,19 +55,19 @@ t_vec=[];
 trajy=zeros(p.nimpacts,1);%linspace(-2,2,p.nimpacts);%
 dtraj=trajy(2)-trajy(1);
 
-num_taus=15;
-taus=linspace(0,1.5,num_taus);
+num_ks=10;
+k_adj=linspace(0.98,1.02,num_ks);
 H_A14=zeros(length(p.K_vec),p.nimpacts);
-H_A13_activate=zeros(length(p.K_vec),p.nimpacts,num_taus);
+H_A13_activate=zeros(length(p.K_vec),p.nimpacts);
 
 
 
 for n=1:p.nimpacts
     xi=0;yi=trajy(n);
-    disp(['Impact number: ' num2str(n)])
+    % disp(['Impact number: ' num2str(n)])
     x_data(n) = xi;    y_data(n) = yi;
 
-    [ui, vi, phi_hat] = drop_impact_matt(xi, yi, ui, vi, phi_hat, eta_hat, p);
+    % [ui, vi, phi_hat] = drop_impact_matt(xi, yi, ui, vi, phi_hat, eta_hat, p);
 
     dH_num(:,n) = 1; 
     impact_ts(n)=t;
@@ -118,56 +118,35 @@ for impact = 1:n
     s = impact_ts(impact);
     elapsed_time = t - s;
     H_A14(:,impact) = p.H_A14(elapsed_time,p.K_vec);
-    for nnn=1:num_taus
-        H_A13_activate(:,impact,nnn) = p.A5_activation(elapsed_time,taus(nnn)).*p.H_A13(t,s,p.K_vec);
-    end
+    H_A13_activate(:,impact) = p.H_A13(t,s,p.K_vec);
 end
-b4_eta_compute = @(x, y, impact, H) p.b4_prefactor * ...
-    sum(p.K3_vec .* H(:,impact) .*...
-    besselj(0, p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
-eta_centerline = @(x,y,H) sum(arrayfun(@(impact) b4_eta_compute(x, y, impact, H), 1:n));
-eta00_num = eta_centerline(next_x,next_y,H_num);
-eta00_formula = arrayfun(@(n) eta_centerline(next_x,next_y,H_A13_activate(:,:,n)) , 1:num_taus);
+b4_eta_compute = @(x, y, impact, H, k_factor) k_factor*p.b4_prefactor * ...
+    sum(k_factor^3*p.K3_vec .* H(:,impact) .*...
+    besselj(0, k_factor*p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
+eta_centerline = @(x,y,H,k_factor) sum(arrayfun(@(impact) b4_eta_compute(x, y, impact, H,k_factor), 1:n));
+
+eta00_num = eta_centerline(next_x,next_y,H_num,1);
+eta00_formula = arrayfun(@(k_factor) eta_centerline(next_x,next_y,H_A13_activate,k_factor) ,k_adj);
 num_waveheight=([num_waveheight,eta00_num]);
 activate_waveheight=([activate_waveheight;eta00_formula]);
 
 end
 disp(num_waveheight)
 disp(activate_waveheight)
-plot(thetas, num_waveheight,"LineWidth",3,"Color",'red');hold on
-legend_labels = {'num'};
-title('\eta(0,0,t), bouncer, activation tanh(t/\tau)');
+
+title('\eta(0,0,t), bouncer, varying k_F');
 
 % Create a color gradient for the tau curves
-cmap = winter(num_taus);
-
-for n=1:num_taus
+cmap = winter(num_ks);
+legend_labels={};
+hold on
+for n=1:num_ks
     plot(thetas, activate_waveheight(:,n), 'LineWidth', 3, 'Color', cmap(n,:));
-    legend_labels{end+1} = ['\tau=',sprintf('%.2f', taus(n)),'T_F'];
+    legend_labels{end+1} = ['k_F=',sprintf('%.3f', k_adj(n)),'k_{real}'];
 end
+plot(thetas, num_waveheight,"LineWidth",3,"Color",'red');
+legend_labels = [legend_labels, {'numerical H'}];
 
 legend(legend_labels)
 xlabel('\theta_I/\pi')
 ylabel('\eta')
-
-% disp(eta00_formula)
-% plot(t_vec, num_waveheight,"LineWidth",3,"Color",'red');hold on
-% legend_labels = {'num'};
-% title(['\eta(0,0,t), \theta_I=',sprintf('%.2f', p.theta/pi),'\pi, with activation tanh(t/\tau)']);
-
-% % Create a color gradient for the tau curves
-% cmap = winter(num_taus);
-
-% for n=1:num_taus
-%     plot(t_vec, activate_waveheight(:,n), 'LineWidth', 3, 'Color', cmap(n,:));
-%     legend_labels{end+1} = ['\tau=',sprintf('%.2f', taus(n)),'T_F'];
-% end
-
-% for i=28:p.nimpacts
-%     xline( p.theta/(4*pi) + i ,"LineStyle",':','LineWidth',2)
-% end
-% legend(legend_labels)
-% xlabel('t/T_F')
-% ylabel('\eta')
-
-% ylim([-0.02 0.02])
