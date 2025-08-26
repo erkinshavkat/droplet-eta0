@@ -6,11 +6,11 @@ addpath('solvers')
 % simulations of interest. Also make sure that the geometry is the same
 Nx=1024;
 Lx=32;
-H=0.001;
+H=0.005;
 Nk=Nx;
 eta0=zeros(Nx);
 % Gam = 3.8:0.01:3.91;
-Gams = linspace(5.4,5.5,5);
+Gams = linspace(4.5,4.6,5);
 
 % Create figure for animation of (p.K_vec, H_vec)
 

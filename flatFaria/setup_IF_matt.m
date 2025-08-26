@@ -8,7 +8,7 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax,theta)
 %   Gam         -------- Amplitude of the shaking
 %   dt_desired  -------- Desired time step
 %% Set parameters
-mem =0.99;
+mem =1;
 Gam = mem*Gam;
 Ny = Nx; 
 Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
