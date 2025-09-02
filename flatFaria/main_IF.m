@@ -17,9 +17,10 @@ H=0.005;
 Lx=16;
 Nx=256;
 eta0=zeros(Nx,Nx);
-Nk=Nx; Lk=Lx;
-theta=0;
-hole_IF(0,0,0,0,gamma,H,Nx,Lx,Nk*2,0,4*pi,theta);
+Nk=Nx; Lk=8*pi;
+theta=0.5;
+mem=0.98;
+hole_IF(0,0,0,0,gamma,H,Nx,Lx,Nk*2,0,Lk,theta,mem);
 
 % p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,Lk);
 % rho=p.rho; g=p.g0; sig=p.sig; b0=p.b0; rb0=sqrt(p.b0); omega0=p.omega0; nu=p.nu;
