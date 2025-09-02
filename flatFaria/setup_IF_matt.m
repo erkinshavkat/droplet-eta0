@@ -1,4 +1,4 @@
-function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax,theta)
+function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax,theta,mem)
 % Sets most of the parameters for the problem
 % Input: 
 %   Nx          -------- Number of points in x
@@ -8,7 +8,6 @@ function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax,theta)
 %   Gam         -------- Amplitude of the shaking
 %   dt_desired  -------- Desired time step
 %% Set parameters
-mem =1;
 Gam = mem*Gam;
 Ny = Nx; 
 Ly = Lx; dt_desired = min(Lx/Nx,Ly/Ny)/16;
@@ -166,30 +165,47 @@ TD=1/(8*pi^2*nu0);
 Me = TD/(1-mem);
 beta1 = (8*pi^2*(4*nu0^2+d0*Bo) + d0*G)^2 / (16*nu0*pi^2);
 
-beta_func= @(k) - 1/(Me)-beta1*(k-2*pi).^2;
+beta_func= @(k) - 1/(Me)-beta1.*(k-2*pi).^2;
 
 
 gammaf_dimensional =  g0 * (Gam/mem);
 gamma_dimensional = g0 * Gam;
 
-kC= omega0 / (2 *(b0*g0 + sqrt(b0^2*g0^2 + omega0^2*(4*nu^2+b0*sig/rho))))^(1/2);
+kC= kf_mean;%omega0 / (2 *(b0*g0 + sqrt(b0^2*g0^2 + omega0^2*(4*nu^2+b0*sig/rho))))^(1/2);
+disp([kC kf_mean])
+disp([ kC/kf_mean])
+
 C1=2*nu*kC^2/gammaf_dimensional;
 
-A6_numerator = @(k_dim) (2*kC^2*(4*nu^2 + b0*sig/rho) + b0*g0)*(k_dim-kC) + nu *kC*C1*(gamma_dimensional-gammaf_dimensional);
-phifunc = @(k) -pi/4;%-1/2 *atan2(1,A6_numerator(k/(2*pi)*kf_mean)/(nu*kC*omega0));
+phi_const_A = (2*kC^2*(4*nu^2 + b0*sig/rho) + b0*g0);
+phi_const_B = nu *kC*C1*(gamma_dimensional-gammaf_dimensional);
+phi_const_C = (nu*kC*omega0);
+
+A6_numerator = @(k_dim) phi_const_A.*(k_dim-kC) + phi_const_B;
+phifunc = @(k) -1/2 *atan2(phi_const_C,A6_numerator(k./(2*pi)*kf_mean));
 % -pi/4
 % -1/2 * acot(2*mem / omega0 *(Gam-Gam/mem))
-
+philin = @(k) phi_const_A*phi_const_C/(2*(phi_const_B^2+phi_const_C^2)).*(k./(2*pi)*kf_mean-kC) - 1/2*atan2(phi_const_C,phi_const_B);
 A5_activation = @(t,tau) tanh(t/tau);
 
 H_A5= @(t,k) (- exp(beta_func(k)*t)) .*cos(2*pi*t +phifunc(k))./(4*pi*sin(phifunc(k)));
-H_A13 = @(t,s,k) 2/(4*pi) *exp(beta_func(k).*(t-s))*cos(2*pi*t + phifunc(k))*cos(2*pi*s-phifunc(k));
-
+H_A13 = @(t,s,k,phi) 2/(4*pi) *exp(beta_func(k).*(t-s)).*cos(2*pi*t + phi(k)).*cos(2*pi*s-phi(k));
 
 
 alpha_func= @(k) k.* sqrt(d0 *(k.^2*Bo + G));
 H_A14 = @(t,k) exp(-2*nu0*k.^2.*t).*sin(alpha_func(k).*t)./alpha_func(k);
 
+H0 = @(t,k) cos(2*pi*t+phifunc(k));
+H0p = @(t,k) -2*pi*sin(2*pi*t+phifunc(k));
+H_A4_full = @(t,s,k) (-exp(beta_func(k).*(t-s)).*H0(t,k).*H0(-s,k) ...
+                    + -exp(-(beta_func(k)+2*nu0.*k.^2).*(t-s)).*H0(-t,k).*H0(s,k) ) ./ ...
+                    (-2.*H0(0,k).*H0p(0,k) - 2*(beta_func(k)+2*nu*k.^2).*H0(0,k).^2 );
+
+% plot(K_vec/(2*pi),phifunc(K_vec)/pi);hold on
+
+% plot(K_vec/(2*pi),phi_lin(K_vec)/pi)
+% ylim([-0.5,0])
+% return
 %% Dissipation operator (including highest frequency) <<< MD >>
 % dissipation term over half timestep, i.e. exp(-2 * nu * k^2 * dt/2)
 D = exp(nu0 * K2_deriv * dt);

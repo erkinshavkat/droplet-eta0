@@ -43,13 +43,13 @@ plot_domain=-plot_range:p.hy:plot_range;
 H_num_ax=plot(plot_domain,0*plot_domain,'LineWidth',2);hold on;
 % H_A5_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),':',"LineWidth",2);
 % H_A14_ax=plot(p.K_vec/(2*pi),zeros(p.Nk,1),'--',"LineWidth",2);
-H_test_ax=plot(plot_domain,0*plot_domain,'-.',"LineWidth",2);
+% H_test_ax=plot(plot_domain,0*plot_domain,'-.',"LineWidth",2);
 H_active_ax=plot(plot_domain,0*plot_domain,'-.',"LineWidth",2);
 
 xlim([-plot_range,plot_range])
 
-legend('numerical','A13+A14','A13*tanh + A14');
-v = VideoWriter('vis/b4 A13 bouncer, scaled kf.avi','Motion JPEG AVI');
+legend('numerical','A14','A13*tanh + A14');
+v = VideoWriter('vis/b4 A14only bouncer.avi','Motion JPEG AVI');
 v.FrameRate = 24; % 6 frames per second, adjust as needed
 open(v);
 
@@ -61,7 +61,7 @@ t_vec=[];
 trajy=zeros(p.nimpacts,1);%linspace(-1,1,p.nimpacts);
 dtraj=trajy(2)-trajy(1);
 
-K_vec_scaled = p.K_vec*1.015;
+K_vec_scaled = p.K_vec;
 K3_vec_scaled = K_vec_scaled.^3;
 for n=1:p.nimpacts
     xi=0;yi=trajy(n);
@@ -88,10 +88,9 @@ for n=1:p.nimpacts
                 elapsed_time = t - s;
                 H_A14(:,impact) = p.H_A14(elapsed_time,p.K_vec);
                 H_A13(:,impact) = p.H_A13(t,s,p.K_vec);
-                H_A13_activate(:,impact) = p.A5_activation(elapsed_time,0.8).*p.H_A13(t,s,p.K_vec);
             end
 
-            b4_eta_compute = @(x, y, impact, H) 1.015*p.b4_prefactor * sum(K3_vec_scaled.* H(:,impact) .* ...
+            b4_eta_compute = @(x, y, impact, H) p.b4_prefactor * sum(K3_vec_scaled.* H(:,impact) .* ...
             besselj(0, K_vec_scaled .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
             
             
@@ -104,15 +103,15 @@ for n=1:p.nimpacts
 
             
             eta_num = arrayfun(@(y)eta_centerline(y,H_num), plot_domain);
-            eta_active = arrayfun(@(y)eta_centerline(y,H_A13_activate+H_A14), plot_domain);
+            eta_sum = arrayfun(@(y)eta_centerline(y,H_A14+H_A13), plot_domain);
             % eta_sum= arrayfun(@(y)eta_centerline(y,H_A13+H_A14), plot_domain);
 
             %faria_ax.YData=faria_plot;
             H_num_ax.YData=eta_num;
-            H_active_ax.YData=eta_active;
+            H_active_ax.YData=eta_sum;
             % H_test_ax.YData=eta_sum;
 
-            ylim([-0.03 0.03])
+            ylim([-0.02 0.02])
 
 
             %title(sprintf('mem=%.2f, t=%f Tf, splice [formula|%.2f kF|numerical]', p.mem, t,splice_split));

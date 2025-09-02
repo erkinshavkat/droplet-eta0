@@ -1,12 +1,11 @@
-function hole_IF(xi,yi,ui,vi,gamma,H,Nx,Lx,Nk,kmin,kmax,theta)
+function hole_IF(xi,yi,ui,vi,gamma,H,Nx,Lx,Nk,kmin,kmax,theta,mem)
 %% Drop's initial position
 disp('--- setting up ---')
 eta0=zeros(Nx);
-p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,kmin,kmax,theta);
+p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,kmin,kmax,theta,mem);
 p.xi = xi; p.yi = yi; p.ui= ui; p.vi = vi;
-p.nimpacts = 30;      % Number of impacts %%%%% ONLY THING TO EDIT HERE
+p.nimpacts = 70;      % Number of impacts %%%%% ONLY THING TO EDIT HERE
 lambdaf = p.lambdaf;
-mem = p.mem;
 %% Execute
 
 resultdir= 'results/varparam/b1/';
