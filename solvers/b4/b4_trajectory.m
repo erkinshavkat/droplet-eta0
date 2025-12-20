@@ -21,16 +21,12 @@ for n=1:p.nimpacts
     for nn=1:p.nsteps_impact
         [H_vec, dH_vec] = H_eq_rkstep(H_vec,dH_vec, t, p);
         if n>p.nimpacts-1
-            b4_each_impact = @(x, y, impact) p.b4_prefactor * sum(p.K3_vec .* H_vec(:,impact) .* besselj(0, p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
-            b4_eta_compute = @(x,y) sum(arrayfun(@(impact) b4_each_impact(x, y, impact), 1:n));
-            eta_intermediate(:,:,n) = arrayfun(b4_eta_compute,p.xx,p.yy);
+            eta_intermediate(:,:,n) = arrayfun(@(x,y) b4_multiple_impact(x,y,x_data,y_data,H_vec,p),p.xx,p.yy);
 
         end
     end
 
-    b4_each_impact = @(x, y, impact) p.b4_prefactor * sum(p.K3_vec .* H_vec(:,impact) .* besselj(0, p.K_vec .* sqrt((x - x_data(impact)).^2 + (y - y_data(impact)).^2 )));
-    b4_eta_compute = @(x,y) sum(arrayfun(@(impact) b4_each_impact(x, y, impact), 1:n));
-    eta_data(:,:,n) = arrayfun(b4_eta_compute,p.xx,p.yy);
+    eta_data(:,:,n) = arrayfun(@(x,y) b4_multiple_impact(x,y,x_data,y_data,H_vec,p),p.xx,p.yy);
 
 end
 end
