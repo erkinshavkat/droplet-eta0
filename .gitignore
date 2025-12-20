@@ -1,4 +1,6 @@
 .gitignore
-Codes/
-*/results/
-*/vis/
+results/
+vis/
+crameri/
+paperfigs/
+testing/
