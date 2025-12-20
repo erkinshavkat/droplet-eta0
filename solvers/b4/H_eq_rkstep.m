@@ -1,5 +1,5 @@
 function [Hfunc,Hprime] = H_eq_rkstep(Hfunc,Hprime, t_in, p)
-% Evolves wave field in F-space through nsteps of size dt
+% one step of the Runge-Kutta method for the damped mathieu
 
 
 

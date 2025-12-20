@@ -1,4 +1,4 @@
-function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmin,kmax,theta,mem,omega)
+function p = setup_IF_matt(Gam,H,eta0,Nx,Lx,Nk,kmax,theta,mem,omega)
 % Sets most of the parameters for the problem
 % Input: 
 %   Nx          -------- Number of points in x
@@ -148,19 +148,18 @@ kx_deriv =  2*pi*1i/Lx*[0:(Nx/2-1) (-Nx/2):-1];
 ky_deriv =  2*pi*1i/Ly*[0:(Ny/2-1) (-Ny/2):-1];
 [Kx_deriv,Ky_deriv] = meshgrid(kx_deriv,ky_deriv);
 K2_deriv = Kx_deriv.^2 + Ky_deriv.^2;
-%% Stuff for B4
+%% 1D real k vectors for H
 
-K_vec = linspace(kmin,kmax,Nk)';
+K_vec = linspace(0,kmax,Nk)';
 dk= K_vec(2)-K_vec(1);
-K_vec=K_vec+dk/6400;
+K_vec=K_vec+dk;
 K2_vec = K_vec.^2;
 K3_vec = K_vec.^3;
 
-b4_prefactor=-d0*M*G/(2*pi);
+b4_prefactor=-d0*M*G/(2*pi); %-b0 m g TF/(2 pi rho)
 
 
-%% A5 for H
-
+%% HF approximation
 TD=1/(8*pi^2*nu0);
 Me = TD/(1-mem);
 beta1 = (8*pi^2*(4*nu0^2+d0*Bo) + d0*G)^2 / (16*nu0*pi^2);

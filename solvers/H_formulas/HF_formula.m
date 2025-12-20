@@ -1,4 +1,11 @@
-function HF = HF_formula(varargin)%t, s, k, p, phi
+function HF = HF_formula(varargin)
+%%HF given by A8, with choices of phi, default is constant -pi/4
+% Inputs:
+% t: time of evaluation
+% s: time of impact
+% k: k domain, can be (Nk,1)
+% p: params struct
+% phi: optional, constant if nothing, 'linear' for linear approximation, 'cotan' for full cotan formula
 phi=-pi/4;
 
 t=varargin{1};s=varargin{2};k=varargin{3};p=varargin{4};
