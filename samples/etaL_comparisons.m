@@ -22,6 +22,7 @@ t = p.theta/(4*pi);
 HL_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","HL"); hold on
 HLinf_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","HLinf"); hold on
 etaLapprox_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","etaL approximate formula"); hold on
+ylim([-0.002 0.002])
 legend()
 %preallocate HL
 HLfunc=zeros(Nk,nimpacts);
@@ -38,12 +39,14 @@ for n=1:nimpacts
         % Here the time step can be whatever since we are no longer integrating
         % just make sure to adjust dt 
 
-
+        pause(0.01)
+        t=t+p.dt;
+    end
         etaL_formula=zeros(1,Nx);
         for nnn=1:length(impact_times)
             s=impact_times(nnn);
             %computing HL from each impact, storing as columns
-            HLfunc(:,n)=HL_formula(t-s,p.K_vec,p);
+            HLfunc(:,nnn)=HL_formula(t-s,p.K_vec,p);
             
             %computing etaL from each impact and superimpose
             etaL_formula=etaL_formula+etaL_approx(p.x,0,t-s,p);
@@ -63,8 +66,6 @@ for n=1:nimpacts
         HL_ax.YData=eta_HL;
         HLinf_ax.YData=eta_HLinf;
         etaLapprox_ax.YData=etaL_formula;
-        pause(0.01)
-        t=t+p.dt;
-    end
+
 
 end
