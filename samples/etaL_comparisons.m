@@ -59,8 +59,8 @@ for n=1:nimpacts
         eta_HLinf=zeros(Nx,1);
 
         for index=1:Nx
-            eta_HL(index)=b4_eta(p.x(index),0,0,0,HLfunc,p);
-            eta_HLinf(index)=b4_eta(p.x(index),0,0,0,HLinf,p);
+            eta_HL(index)=eta_num(p.x(index),0,0,0,HLfunc,p);
+            eta_HLinf(index)=eta_num(p.x(index),0,0,0,HLinf,p);
         end
 
         HL_ax.YData=eta_HL;

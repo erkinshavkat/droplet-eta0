@@ -84,11 +84,11 @@ for n=1:p.nimpacts
             % eta_num_linquad = zeros(size(p.y)); % restored
             for i = 1:length(p.y)
                 y = p.y(i);
-                % eta_num_lin(i) = b4_eta(0,y, x_data,y_data,H_A14_lin,p); % restored
-                % eta_1impact(i) = b4_eta(0,y, x_data,y_data,H_A14_currentimpact,p);
+                % eta_num_lin(i) = eta_num(0,y, x_data,y_data,H_A14_lin,p); % restored
+                % eta_1impact(i) = eta_num(0,y, x_data,y_data,H_A14_currentimpact,p);
 
-                eta_num_full(i) = b4_eta(0,y, x_data,y_data,H_A14_full,p);
-                % eta_num_quad(i) = b4_eta(0,y, x_data,y_data,H_A14_quad,p);
+                eta_num_full(i) = eta_num(0,y, x_data,y_data,H_A14_full,p);
+                % eta_num_quad(i) = eta_num(0,y, x_data,y_data,H_A14_quad,p);
                 % eta_num_linquad(i) = eta_num_lin(i) + eta_num_quad(i); % restored
             end
 

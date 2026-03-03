@@ -206,6 +206,8 @@ Pfunc = @(x,y) d0*M(1)*G*deltafunc2d(x,y);
 %Pmat=@(xp,yp) del2( Pfunc(xx-xp,yy-yp),hx,hy);
 Pvec =@(xp,yp) Lap2d*( reshape(Pfunc(xx-xp,yy-yp),[],1) );
 
+
+% R=drop_radius/xF*4;
 %%
 varList = who;
 

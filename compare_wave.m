@@ -77,10 +77,10 @@ for n=1:p.nimpacts
             for i=1:length(plot_domain)
                 y = plot_domain(i);
 
-                eta_A14_full(i)   = b4_eta(0,y, x_data,y_data,H_A14_full,p);
-                % eta_A13(i)       = b4_eta(0,y, x_data,y_data,H_A13_kCkf,p);
-                % % eta_A14_lin(i)    = b4_eta(0,y, x_data,y_data,H_A14_lin,p);
-                % eta_A14_taylor(i) = b4_eta(0,y, x_data,y_data,H_A14_taylor,p);
+                eta_A14_full(i)   = eta_num(0,y, x_data,y_data,H_A14_full,p);
+                % eta_A13(i)       = eta_num(0,y, x_data,y_data,H_A13_kCkf,p);
+                % % eta_A14_lin(i)    = eta_num(0,y, x_data,y_data,H_A14_lin,p);
+                % eta_A14_taylor(i) = eta_num(0,y, x_data,y_data,H_A14_taylor,p);
             end
             H_A14_full_ax.YData   = eta_A14_full;
             alphak_approx_ax.YData = eta_L_formula;

@@ -51,10 +51,10 @@ for n=1:nimpacts
         %compute Faria eta with ift
         faria_eta=real(ifft2(eta_hat));
 
-        %evaluate eta from H. b4_eta can only evaluate one point at once. To evaluate along (x,0), need loop
+        %evaluate eta from H. eta_num can only evaluate one point at once. To evaluate along (x,0), need loop
         H_eta=zeros(Nx,1);
         for index=1:Nx
-            H_eta(index)=b4_eta(p.x(index),0,0,0,H_vec,p);
+            H_eta(index)=eta_num(p.x(index),0,0,0,H_vec,p);
         end
 
         faria_ax.YData=faria_eta(Nx/2+1,:);

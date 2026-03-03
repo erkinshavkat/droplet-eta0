@@ -60,8 +60,8 @@ for n=1:nimpacts
         eta_constphi=zeros(Nx,1);
 
         for index=1:Nx
-            eta_varphi(index)=b4_eta(p.x(index),0,0,0,Hvarphi,p);
-            eta_constphi(index)=b4_eta(p.x(index),0,0,0,Hconstphi,p);
+            eta_varphi(index)=eta_num(p.x(index),0,0,0,Hvarphi,p);
+            eta_constphi(index)=eta_num(p.x(index),0,0,0,Hconstphi,p);
         end
 
         varphi_ax.YData=eta_varphi;
