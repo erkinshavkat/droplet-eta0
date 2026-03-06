@@ -4,7 +4,7 @@ addpath(genpath(pwd))
 % gamma=4.4974; H=0.005;
 
 gamma=5.4953;H=0.001;
-fig = figure('Position', [0, 0, 1400, 800]); 
+fig = figure('Position', [100, 100, 1200, 800]); 
 
 Lx=16; Nx=256;
 Nk=Nx; Lk=12*pi;
@@ -16,7 +16,7 @@ omega=80;
 p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,Lk,theta,mem,omega);
 
 
-nimpacts=50;
+nimpacts=10;
 
 
 t0 = p.theta/(4*pi);
@@ -24,9 +24,9 @@ t=t0;
 eta_faria_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","Exact \eta_L discrete"); hold on
 eta_discrete_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","discrete formula"); hold on
 eta_cont_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","cont formula"); hold on
-eta_nodelta_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","cont formula delta approximated"); hold on
+eta_nodelta_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","gaussian impact R=4, delta->cos"); hold on
 
-ylim([-0.005 0.005])
+ylim([-0.01 0.01])
 xlim([-6 6])
 legend('FontSize',18)
 
@@ -44,7 +44,7 @@ speed=5;
 motionrange = (speed/1000)/p.xF *p.TF * nimpacts
 
 % Create video writer
-videoFile = sprintf('vis/cont_approxdelta_L_walk%.dmm_omega%.d.avi',speed,omega);
+videoFile = sprintf('vis/cont_widegaussianimpact_approxdelta_walk%.dmm_omega%.d.avi',speed,omega);
 v = VideoWriter(videoFile);
 v.FrameRate = 18;
 open(v);
@@ -55,6 +55,8 @@ ytraj=zeros(nimpacts,1);
 
 xtraj_fine=linspace(-motionrange/2,motionrange/2,nimpacts*p.nsteps_impact);
 ytraj_fine=zeros(nimpacts*p.nsteps_impact,1);
+
+R=4*p.drop_radius / p.xF;
 for n=1:nimpacts
     
     disp(['Impact number: ' num2str(n)])
@@ -81,7 +83,7 @@ for n=1:nimpacts
             eta_cont=zeros(1,Nx);eta_nodelta=zeros(1,Nx);
             for nnn=1:round(((t)-t0)/p.dt)
                 s=t0+(nnn-1)*p.dt;
-                eta_nodelta=eta_nodelta+ p.dt.*etaL_approx(p.x-xtraj_fine(nnn),0,t-s,p).*(1+2*cos(2*pi*(t-s)));
+                eta_nodelta=eta_nodelta+ p.dt.*etaL_gaussian(p.x-xtraj_fine(nnn),0,t-s,R,p).*(1+2*cos(2*pi*(t-s)));
                 eta_cont=eta_cont+ p.dt.*etaL_approx(p.x-xtraj_fine(nnn),0,t-s,p);
             end
 

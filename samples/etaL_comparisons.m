@@ -10,7 +10,7 @@ Lx=16; Nx=128;
 Nk=Nx; Lk=12*pi;
 mem=0; theta=1.3;
 eta0=zeros(Nx);
-omega=80;
+omega=800;
 p = setup_IF_matt(gamma,H,eta0,Nx,Lx,Nk,Lk,theta,mem,omega);
 
 
@@ -22,7 +22,7 @@ t = p.theta/(4*pi);
 HL_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","HL"); hold on
 HLinf_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","HLinf"); hold on
 etaLapprox_ax=plot(p.x,zeros(Nx,1),"LineWidth",2,"DisplayName","etaL approximate formula"); hold on
-ylim([-0.002 0.002])
+ylim([-0.02 0.02])
 legend()
 %preallocate HL
 HLfunc=zeros(Nk,nimpacts);
