@@ -5,7 +5,7 @@ function etaL = etaL_corr(x,y,t,p)
     %t: time since impact
     %p: params 
     %this ends up being the exact same integral as etaL for a gaussian spatial impact
-    %only difference is R^2/2 is replaced by a/b
+    %only difference is R^2/2 is replaced by a/b * m?
     b = p.G/2*sqrt(p.d0/p.Bo);
     a = sqrt(p.d0*p.Bo);
     R=sqrt(2*a/b);
